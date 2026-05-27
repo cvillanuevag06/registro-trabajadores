@@ -30,8 +30,6 @@
     margin: 0 auto;
     padding: 0 0 80px;
   }
-
-  /* HEADER */
   .header {
     background: var(--surface);
     padding: 20px 20px 16px;
@@ -49,10 +47,10 @@
   .logo-sub { font-size: 11px; color: var(--text2); margin-top: 1px; }
   .status-dot {
     width: 8px; height: 8px; border-radius: 50%;
-    background: var(--success); box-shadow: 0 0 6px var(--success);
+    box-shadow: 0 0 6px var(--warning);
   }
-
-  /* TABS */
+  .status-loading { background: var(--warning); }
+  .status-ready { background: var(--success); box-shadow: 0 0 6px var(--success); }
   .tabs { display: flex; gap: 4px; background: var(--primary); border-radius: 10px; padding: 4px; }
   .tab {
     flex: 1; padding: 8px; border-radius: 7px; border: none;
@@ -60,13 +58,9 @@
     background: transparent; color: var(--text2);
   }
   .tab.active { background: var(--accent); color: white; }
-
-  /* MAIN CONTENT */
   .content { padding: 20px; }
   .section { display: none; }
   .section.active { display: block; }
-
-  /* CARDS */
   .card {
     background: var(--surface);
     border-radius: var(--radius);
@@ -78,8 +72,6 @@
     font-size: 13px; font-weight: 600; color: var(--text2);
     text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 14px;
   }
-
-  /* FORM */
   .form-group { margin-bottom: 14px; }
   label { display: block; font-size: 13px; color: var(--text2); margin-bottom: 6px; font-weight: 500; }
   input[type="text"] {
@@ -90,26 +82,12 @@
   }
   input[type="text"]:focus { border-color: var(--accent); }
   input[type="text"]::placeholder { color: rgba(255,255,255,0.25); }
-
-  /* TIPO MOVIMIENTO */
-  .tipo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .tipo-btn {
-    padding: 14px; border-radius: var(--radius-sm); border: 1.5px solid rgba(255,255,255,0.12);
-    background: transparent; color: var(--text2); font-size: 14px; font-weight: 600;
-    cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column;
-    align-items: center; gap: 6px;
-  }
-  .tipo-btn .tipo-icon { font-size: 24px; }
-  .tipo-btn.selected-entrada { border-color: var(--success); color: var(--success); background: rgba(46,204,113,0.1); }
-  .tipo-btn.selected-salida { border-color: var(--accent); color: var(--accent); background: rgba(233,69,96,0.1); }
-
-  /* CAMARA */
   .camera-container {
     position: relative; width: 100%; aspect-ratio: 3/4;
     border-radius: var(--radius); overflow: hidden;
     background: #000; border: 2px dashed rgba(255,255,255,0.15);
   }
-  #video, #video2 {
+  video {
     width: 100%; height: 100%; object-fit: cover;
     transform: scaleX(-1);
   }
@@ -121,35 +99,23 @@
     width: 60%; aspect-ratio: 3/4; border: 2px solid rgba(255,255,255,0.4);
     border-radius: 50%; box-shadow: 0 0 0 2000px rgba(0,0,0,0.3);
   }
-  .camera-placeholder {
-    position: absolute; inset: 0;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 10px; color: var(--text2); font-size: 14px;
-  }
-  .camera-placeholder .ph-icon { font-size: 42px; opacity: 0.4; }
-  #canvas, #canvas2 { display: none; }
-
   .photo-preview {
     width: 100%; aspect-ratio: 3/4; border-radius: var(--radius);
     object-fit: cover; display: none;
     border: 2px solid rgba(255,255,255,0.1);
   }
-
-  /* BOTONES */
+  canvas { display: none; }
   .btn {
     width: 100%; padding: 15px; border-radius: var(--radius-sm);
     border: none; font-size: 15px; font-weight: 700;
     cursor: pointer; transition: all 0.2s; letter-spacing: 0.3px;
   }
   .btn-primary { background: var(--accent); color: white; }
-  .btn-primary:hover { opacity: 0.9; transform: scale(0.99); }
   .btn-secondary {
     background: transparent; color: var(--text2);
     border: 1px solid rgba(255,255,255,0.15);
   }
-  .btn-secondary:hover { background: rgba(255,255,255,0.05); }
   .btn-success { background: var(--success); color: white; }
-  .btn-success:hover { opacity: 0.9; }
   .btn-sm {
     padding: 10px 16px; font-size: 13px;
     border-radius: var(--radius-sm); border: none;
@@ -157,18 +123,18 @@
   }
   .btn-row { display: flex; gap: 10px; margin-top: 14px; }
   .btn-row .btn { flex: 1; }
-
-  /* RESULTADO COMPARACION */
   .resultado-card {
     border-radius: var(--radius); padding: 20px;
     text-align: center; margin-bottom: 16px; display: none;
   }
   .resultado-card.autorizado { background: rgba(46,204,113,0.15); border: 1.5px solid var(--success); }
   .resultado-card.rechazado { background: rgba(231,76,60,0.15); border: 1.5px solid var(--danger); }
+  .resultado-card.reconocido { background: rgba(52,152,219,0.15); border: 1.5px solid #3498db; }
   .resultado-icon { font-size: 48px; margin-bottom: 10px; }
   .resultado-titulo { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
   .resultado-card.autorizado .resultado-titulo { color: var(--success); }
   .resultado-card.rechazado .resultado-titulo { color: var(--danger); }
+  .resultado-card.reconocido .resultado-titulo { color: #3498db; }
   .resultado-info { font-size: 13px; color: var(--text2); margin-bottom: 4px; }
   .resultado-score {
     display: inline-block; padding: 6px 16px; border-radius: 20px;
@@ -176,8 +142,7 @@
   }
   .autorizado .resultado-score { background: rgba(46,204,113,0.2); color: var(--success); }
   .rechazado .resultado-score { background: rgba(231,76,60,0.2); color: var(--danger); }
-
-  /* REGISTROS */
+  .reconocido .resultado-score { background: rgba(52,152,219,0.2); color: #3498db; }
   .registro-item {
     display: flex; align-items: center; gap: 12px;
     padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.06);
@@ -185,8 +150,7 @@
   .registro-item:last-child { border-bottom: none; }
   .registro-foto {
     width: 44px; height: 44px; border-radius: 8px;
-    object-fit: cover; flex-shrink: 0;
-    background: var(--surface2);
+    object-fit: cover; flex-shrink: 0; background: var(--surface2);
   }
   .registro-foto-placeholder {
     width: 44px; height: 44px; border-radius: 8px;
@@ -204,18 +168,13 @@
   .badge-salida { background: rgba(233,69,96,0.15); color: var(--accent); }
   .badge-autorizado { background: rgba(46,204,113,0.15); color: var(--success); }
   .badge-rechazado { background: rgba(231,76,60,0.15); color: var(--danger); }
-
-  /* STATS */
   .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
   .stat-card {
     background: var(--surface); border-radius: var(--radius-sm);
-    padding: 14px; border: 1px solid rgba(255,255,255,0.06);
-    text-align: center;
+    padding: 14px; border: 1px solid rgba(255,255,255,0.06); text-align: center;
   }
   .stat-num { font-size: 28px; font-weight: 800; margin-bottom: 4px; }
   .stat-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.6px; }
-
-  /* LOADING */
   .loading {
     display: none; text-align: center; padding: 20px;
     color: var(--text2); font-size: 13px;
@@ -226,31 +185,52 @@
     animation: spin 0.8s linear infinite; margin: 0 auto 10px;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* ALERT */
   .alert {
     padding: 12px 14px; border-radius: var(--radius-sm);
     font-size: 13px; margin-bottom: 14px; display: none;
   }
   .alert-error { background: rgba(231,76,60,0.15); border: 1px solid var(--danger); color: #ff9090; }
   .alert-success { background: rgba(46,204,113,0.15); border: 1px solid var(--success); color: #7dffb3; }
+  .alert-warning { background: rgba(243,156,18,0.15); border: 1px solid var(--warning); color: #ffd080; }
   .alert-info { background: rgba(52,152,219,0.15); border: 1px solid #3498db; color: #90c8ff; }
-
   .empty-state {
     text-align: center; padding: 40px 20px;
     color: var(--text2); font-size: 14px;
   }
   .empty-icon { font-size: 40px; margin-bottom: 10px; opacity: 0.4; }
-
-  .tiempo-badge {
-    font-size: 12px; color: var(--text2); margin-top: 4px;
-    display: flex; align-items: center; gap: 4px;
-  }
-
   .fecha-hora {
     text-align: center; padding: 10px;
     font-size: 13px; color: var(--text2); margin-bottom: 4px;
   }
+  .init-screen {
+    text-align: center; padding: 60px 20px;
+  }
+  .init-screen .spinner { width: 40px; height: 40px; border-width: 4px; }
+  .init-screen p { margin-top: 16px; color: var(--text2); font-size: 14px; }
+  .known-badge {
+    display: inline-block; padding: 3px 8px; border-radius: 12px;
+    font-size: 10px; font-weight: 700; background: rgba(52,152,219,0.2);
+    color: #3498db; margin-left: 6px;
+  }
+  .worker-match {
+    display: flex; align-items: center; gap: 14px;
+    padding: 16px; background: rgba(52,152,219,0.1);
+    border: 1.5px solid #3498db; border-radius: var(--radius);
+    margin-bottom: 14px;
+  }
+  .worker-match img {
+    width: 56px; height: 56px; border-radius: 10px; object-fit: cover;
+  }
+  .worker-match-info .match-name { font-size: 18px; font-weight: 700; color: #3498db; }
+  .worker-match-info .match-sub { font-size: 12px; color: var(--text2); margin-top: 2px; }
+  .fraud-alert {
+    padding: 16px; background: rgba(231,76,60,0.15);
+    border: 1.5px solid var(--danger); border-radius: var(--radius);
+    text-align: center; margin-bottom: 14px;
+  }
+  .fraud-alert .fraud-icon { font-size: 40px; margin-bottom: 8px; }
+  .fraud-alert .fraud-title { font-size: 16px; font-weight: 800; color: var(--danger); margin-bottom: 4px; }
+  .fraud-alert .fraud-sub { font-size: 12px; color: var(--text2); }
 </style>
 </head>
 <body>
@@ -264,550 +244,758 @@
         <div class="logo-sub" id="fecha-actual">Cargando...</div>
       </div>
     </div>
-    <div class="status-dot" id="status-dot" title="Sistema listo"></div>
+    <div class="status-dot status-loading" id="status-dot" title="Cargando IA..."></div>
   </div>
   <div class="tabs">
-    <button class="tab active" onclick="switchTab('registro')">Registro</button>
-    <button class="tab" onclick="switchTab('verificar')">Verificar</button>
-    <button class="tab" onclick="switchTab('historial')">Historial</button>
+    <button class="tab active" onclick="switchTab('registro', this)">Entrada</button>
+    <button class="tab" onclick="switchTab('verificar', this)">Salida</button>
+    <button class="tab" onclick="switchTab('historial', this)">Historial</button>
   </div>
 </div>
 
 <div class="content">
 
-  <!-- TAB: REGISTRO -->
-  <div class="section active" id="tab-registro">
+  <!-- INIT LOADING -->
+  <div id="init-loading" class="init-screen">
+    <div class="spinner"></div>
+    <p id="init-msg">Cargando modelos de reconocimiento facial...</p>
+  </div>
+
+  <!-- TAB: REGISTRO / ENTRADA -->
+  <div class="section" id="tab-registro">
     <div class="fecha-hora" id="hora-actual">--:--:--</div>
 
-    <div class="card">
-      <div class="card-title">Tipo de movimiento</div>
-      <div class="tipo-grid">
-        <button class="tipo-btn" id="btn-entrada" onclick="selectTipo('entrada')">
-          <span class="tipo-icon">🌅</span>
-          Entrada
-        </button>
-        <button class="tipo-btn" id="btn-salida" onclick="selectTipo('salida')">
-          <span class="tipo-icon">🌆</span>
-          Salida
-        </button>
+    <div class="card" style="text-align:center;padding:12px;background:rgba(46,204,113,0.1);border:1px solid var(--success);">
+      <span style="color:var(--success);font-weight:700;font-size:14px;">🌅 REGISTRO DE ENTRADA</span>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <div class="card-title">📷 Tomar foto de entrada</div>
+      <div class="camera-container" id="cam-container-1">
+        <video id="video1" autoplay playsinline></video>
+        <div class="camera-overlay"><div class="face-guide"></div></div>
+      </div>
+      <canvas id="canvas1"></canvas>
+      <img id="preview1" class="photo-preview" alt="">
+      <div class="btn-row">
+        <button class="btn btn-secondary btn-sm" onclick="startCam(1)" id="btn-open-1">📷 Activar cámara</button>
+        <button class="btn btn-primary btn-sm" onclick="capture(1)" id="btn-snap-1" style="display:none">📸 Tomar foto</button>
+        <button class="btn btn-secondary btn-sm" onclick="retake(1)" id="btn-redo-1" style="display:none">↩ Repetir</button>
       </div>
     </div>
 
-    <div class="card">
-      <div class="card-title">Datos del trabajador</div>
+    <!-- Resultado reconocimiento -->
+    <div id="recog-result" style="display:none"></div>
+
+    <!-- Formulario nombre (solo si es nuevo) -->
+    <div class="card" id="nombre-card" style="display:none">
+      <div class="card-title">Trabajador nuevo</div>
       <div class="form-group">
         <label>Nombre completo</label>
         <input type="text" id="nombre-input" placeholder="Ej: Juan García López">
       </div>
     </div>
 
-    <div class="card">
-      <div class="card-title">Fotografía</div>
-      <div id="camera-area-1">
-        <div class="camera-container" id="cam-container-1">
-          <video id="video" autoplay playsinline></video>
-          <div class="camera-overlay">
-            <div class="face-guide"></div>
-          </div>
-          <div class="camera-placeholder" id="cam-placeholder-1">
-            <span class="ph-icon">📷</span>
-            <span>Toca para activar cámara</span>
-          </div>
-        </div>
-        <canvas id="canvas"></canvas>
-        <img id="photo-preview" class="photo-preview" alt="Foto capturada">
-      </div>
-      <div class="btn-row" id="cam-btns-1">
-        <button class="btn btn-secondary btn-sm" onclick="startCamera(1)" id="btn-start-cam-1">📷 Activar cámara</button>
-        <button class="btn btn-primary btn-sm" onclick="capturePhoto(1)" id="btn-capture-1" style="display:none">📸 Tomar foto</button>
-        <button class="btn btn-secondary btn-sm" onclick="retakePhoto(1)" id="btn-retake-1" style="display:none">↩ Repetir</button>
-      </div>
-    </div>
+    <div class="alert" id="alert-reg"></div>
 
-    <div class="alert alert-error" id="alert-registro"></div>
-    <div class="alert alert-success" id="alert-registro-ok"></div>
-
-    <div class="loading" id="loading-registro">
+    <div class="loading" id="loading-reg">
       <div class="spinner"></div>
-      Guardando registro...
+      <span id="loading-reg-msg">Analizando rostro...</span>
     </div>
 
-    <button class="btn btn-success" onclick="guardarRegistro()">✅ Guardar registro</button>
+    <button class="btn btn-success" id="btn-registrar" onclick="procesarEntrada()" style="display:none">✅ Registrar entrada</button>
+    <button class="btn btn-primary" id="btn-analizar" onclick="analizarRostro()" style="display:none">🤖 Identificar trabajador</button>
   </div>
 
-  <!-- TAB: VERIFICAR -->
+  <!-- TAB: VERIFICAR / SALIDA -->
   <div class="section" id="tab-verificar">
-    <div class="card">
+    <div class="card" style="text-align:center;padding:12px;background:rgba(233,69,96,0.1);border:1px solid var(--accent);">
+      <span style="color:var(--accent);font-weight:700;font-size:14px;">🌆 VERIFICACIÓN DE SALIDA</span>
+    </div>
+
+    <div class="card" style="margin-top:12px">
       <div class="card-title">Buscar trabajador</div>
-      <div class="form-group">
-        <label>Nombre del trabajador</label>
-        <input type="text" id="buscar-input" placeholder="Ej: Juan García">
-        <div class="btn-row" style="margin-top:10px">
-          <button class="btn btn-primary btn-sm" onclick="buscarTrabajador()">🔍 Buscar</button>
-        </div>
+      <input type="text" id="buscar-input" placeholder="Buscar por nombre..." oninput="filtrarLista()">
+    </div>
+
+    <div class="card">
+      <div class="card-title">Pendientes de salida — <span id="count-pendientes">0</span></div>
+      <div id="lista-entradas-hoy">
+        <div class="empty-state"><div class="empty-icon">📋</div><div>Sin entradas hoy</div></div>
       </div>
     </div>
 
-    <div id="trabajador-encontrado" style="display:none">
+    <div id="verificar-panel" style="display:none">
       <div class="card">
-        <div class="card-title">Trabajador encontrado</div>
+        <div class="card-title">Trabajador seleccionado</div>
         <div class="registro-item">
-          <img id="foto-entrada-preview" class="registro-foto" src="" alt="">
+          <img id="foto-sel" class="registro-foto" src="" alt="">
           <div class="registro-info">
-            <div class="registro-nombre" id="nombre-encontrado">-</div>
-            <div class="registro-meta">Entrada: <span id="hora-entrada-encontrado">-</span></div>
+            <div class="registro-nombre" id="nombre-sel">-</div>
+            <div class="registro-meta">Entrada: <span id="hora-sel">-</span></div>
           </div>
           <span class="badge badge-entrada">ENTRADA</span>
         </div>
       </div>
 
       <div class="card">
-        <div class="card-title">Tomar foto de salida</div>
-        <div class="camera-container" id="cam-container-2">
+        <div class="card-title">📷 Foto de salida</div>
+        <div class="camera-container">
           <video id="video2" autoplay playsinline></video>
-          <div class="camera-overlay">
-            <div class="face-guide"></div>
-          </div>
+          <div class="camera-overlay"><div class="face-guide"></div></div>
         </div>
         <canvas id="canvas2"></canvas>
-        <img id="photo-preview-2" class="photo-preview" alt="Foto salida">
-        <div class="btn-row" id="cam-btns-2">
-          <button class="btn btn-secondary btn-sm" onclick="startCamera(2)" id="btn-start-cam-2">📷 Activar cámara</button>
-          <button class="btn btn-primary btn-sm" onclick="capturePhoto(2)" id="btn-capture-2" style="display:none">📸 Tomar foto</button>
-          <button class="btn btn-secondary btn-sm" onclick="retakePhoto(2)" id="btn-retake-2" style="display:none">↩ Repetir</button>
+        <img id="preview2" class="photo-preview" alt="">
+        <div class="btn-row">
+          <button class="btn btn-secondary btn-sm" onclick="startCam(2)" id="btn-open-2">📷 Activar</button>
+          <button class="btn btn-primary btn-sm" onclick="capture(2)" id="btn-snap-2" style="display:none">📸 Foto</button>
+          <button class="btn btn-secondary btn-sm" onclick="retake(2)" id="btn-redo-2" style="display:none">↩ Repetir</button>
         </div>
       </div>
 
-      <div class="loading" id="loading-verificar">
+      <div class="loading" id="loading-ver">
         <div class="spinner"></div>
         Comparando rostros con IA...
       </div>
 
-      <div class="resultado-card" id="resultado-verificacion">
-        <div class="resultado-icon" id="resultado-icon">-</div>
-        <div class="resultado-titulo" id="resultado-titulo">-</div>
-        <div class="resultado-info" id="resultado-info1">-</div>
-        <div class="resultado-info" id="resultado-info2">-</div>
-        <div class="resultado-score" id="resultado-score">-</div>
-      </div>
+      <div class="resultado-card" id="resultado-ver"></div>
 
-      <button class="btn btn-primary" id="btn-comparar" onclick="compararRostros()" style="display:none">
-        🤖 Comparar con IA
-      </button>
-      <button class="btn btn-success" id="btn-autorizar" onclick="autorizarPago()" style="display:none; margin-top:10px">
-        💰 Registrar pago autorizado
-      </button>
+      <div id="fraud-box" style="display:none"></div>
+
+      <button class="btn btn-primary" id="btn-comparar" onclick="compararSalida()" style="display:none">🤖 Verificar identidad</button>
+      <button class="btn btn-success" id="btn-autorizar" onclick="autorizarPago()" style="display:none; margin-top:10px">💰 Autorizar pago</button>
     </div>
 
-    <div class="alert alert-error" id="alert-verificar"></div>
-    <div class="alert alert-success" id="alert-verificar-ok"></div>
+    <div class="alert" id="alert-ver"></div>
   </div>
 
   <!-- TAB: HISTORIAL -->
   <div class="section" id="tab-historial">
     <div class="stats-grid">
       <div class="stat-card">
-        <div class="stat-num" id="stat-entradas" style="color: var(--success)">0</div>
+        <div class="stat-num" id="stat-entradas" style="color:var(--success)">0</div>
         <div class="stat-label">Entradas hoy</div>
       </div>
       <div class="stat-card">
-        <div class="stat-num" id="stat-salidas" style="color: var(--accent)">0</div>
+        <div class="stat-num" id="stat-salidas" style="color:var(--accent)">0</div>
         <div class="stat-label">Salidas hoy</div>
       </div>
       <div class="stat-card">
-        <div class="stat-num" id="stat-autorizados" style="color: var(--success)">0</div>
+        <div class="stat-num" id="stat-autorizados" style="color:var(--success)">0</div>
         <div class="stat-label">Autorizados</div>
       </div>
       <div class="stat-card">
-        <div class="stat-num" id="stat-rechazados" style="color: var(--danger)">0</div>
-        <div class="stat-label">Rechazados</div>
+        <div class="stat-num" id="stat-conocidos" style="color:#3498db">0</div>
+        <div class="stat-label">Trabajadores guardados</div>
       </div>
     </div>
 
     <div class="card">
       <div class="card-title">Registros del día</div>
       <div id="lista-registros">
-        <div class="empty-state">
-          <div class="empty-icon">📋</div>
-          <div>Sin registros aún</div>
-        </div>
+        <div class="empty-state"><div class="empty-icon">📋</div><div>Sin registros aún</div></div>
       </div>
     </div>
 
-    <button class="btn btn-secondary" onclick="exportarDatos()" style="margin-top:4px">
-      📊 Exportar a CSV
-    </button>
+    <button class="btn btn-secondary" onclick="exportarCSV()" style="margin-top:4px">📊 Exportar CSV</button>
+    <button class="btn btn-secondary" onclick="limpiarFotosAntiguas()" style="margin-top:8px">🧹 Limpiar fotos antiguas</button>
   </div>
 
 </div>
 
 <script>
-const DB_KEY = 'trabajadores_db';
-let registros = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
-let tipoSeleccionado = null;
-let fotoCapturada1 = null;
-let fotoCapturada2 = null;
-let stream1 = null, stream2 = null;
+// ========== CONFIG ==========
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxCbQBSTLgL5M427oH-TmTlup0CeZMZk4nM1dG-A9gyFmfCMx5R6sAs-7ew_E-6xRE/exec';
+const DUPLICATE_THRESHOLD = 0.10;  // Fotos casi idénticas = fraude
+const MATCH_THRESHOLD = 0.45;      // Umbral para reconocer persona
+const VERIFY_THRESHOLD = 0.50;     // Umbral para autorizar pago
+const CLEANUP_DAYS = 14;           // Días antes de limpiar foto history
+
+// ========== STATE ==========
+const DB_REG = 'ctrl_registros';
+const DB_WORKERS = 'ctrl_workers';
+const DB_PHOTOS = 'ctrl_photo_history';
+
+let registros = JSON.parse(localStorage.getItem(DB_REG) || '[]');
+let workers = JSON.parse(localStorage.getItem(DB_WORKERS) || '[]');
+let photoHistory = JSON.parse(localStorage.getItem(DB_PHOTOS) || '[]');
+
+let streams = {};
+let fotos = {};
+let descriptors = {};
 let trabajadorActual = null;
+let reconocido = null;
 let modelsLoaded = false;
 
-function getHoy() {
-  return new Date().toLocaleDateString('es-MX', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
-}
-function getHora() {
-  return new Date().toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
-}
-function getTiempoStr(ts) {
-  const d = new Date(ts);
-  return d.toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit' });
-}
-function getFechaStr(ts) {
-  const d = new Date(ts);
-  return d.toLocaleDateString('es-MX', { day:'2-digit', month:'2-digit' });
-}
-
+// ========== INIT ==========
 document.getElementById('fecha-actual').textContent = getHoy();
 setInterval(() => {
-  document.getElementById('hora-actual').textContent = getHora();
+  const el = document.getElementById('hora-actual');
+  if (el) el.textContent = getHora();
 }, 1000);
-document.getElementById('hora-actual').textContent = getHora();
 
-function switchTab(tab) {
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('tab-' + tab).classList.add('active');
-  event.target.classList.add('active');
-  if (tab === 'historial') actualizarHistorial();
-}
+autoCleanup();
+initModels();
 
-function selectTipo(tipo) {
-  tipoSeleccionado = tipo;
-  document.getElementById('btn-entrada').className = 'tipo-btn' + (tipo === 'entrada' ? ' selected-entrada' : '');
-  document.getElementById('btn-salida').className = 'tipo-btn' + (tipo === 'salida' ? ' selected-salida' : '');
-}
-
-async function startCamera(num) {
-  try {
-    const videoEl = document.getElementById('video' + (num === 1 ? '' : '2'));
-    const placeholder = document.getElementById('cam-placeholder-' + num);
-    if (placeholder) placeholder.style.display = 'none';
-
-    const s = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }
-    });
-    if (num === 1) { if (stream1) stream1.getTracks().forEach(t => t.stop()); stream1 = s; }
-    else { if (stream2) stream2.getTracks().forEach(t => t.stop()); stream2 = s; }
-    videoEl.srcObject = s;
-
-    document.getElementById('btn-start-cam-' + num).style.display = 'none';
-    document.getElementById('btn-capture-' + num).style.display = 'inline-block';
-  } catch(e) {
-    showAlert('alert-registro', 'No se pudo acceder a la cámara. Verifica los permisos.');
-  }
-}
-
-function capturePhoto(num) {
-  const videoEl = document.getElementById(num === 1 ? 'video' : 'video2');
-  const canvasEl = document.getElementById(num === 1 ? 'canvas' : 'canvas2');
-  const previewEl = document.getElementById(num === 1 ? 'photo-preview' : 'photo-preview-2');
-
-  canvasEl.width = videoEl.videoWidth || 640;
-  canvasEl.height = videoEl.videoHeight || 480;
-  const ctx = canvasEl.getContext('2d');
-  ctx.save();
-  ctx.translate(canvasEl.width, 0);
-  ctx.scale(-1, 1);
-  ctx.drawImage(videoEl, 0, 0);
-  ctx.restore();
-
-  const dataUrl = canvasEl.toDataURL('image/jpeg', 0.8);
-  if (num === 1) fotoCapturada1 = dataUrl;
-  else fotoCapturada2 = dataUrl;
-
-  previewEl.src = dataUrl;
-  previewEl.style.display = 'block';
-  videoEl.style.display = 'none';
-
-  const stream = num === 1 ? stream1 : stream2;
-  if (stream) stream.getTracks().forEach(t => t.stop());
-
-  document.getElementById('btn-capture-' + num).style.display = 'none';
-  document.getElementById('btn-retake-' + num).style.display = 'inline-block';
-
-  if (num === 2) {
-    document.getElementById('btn-comparar').style.display = 'block';
-  }
-}
-
-function retakePhoto(num) {
-  const videoEl = document.getElementById(num === 1 ? 'video' : 'video2');
-  const previewEl = document.getElementById(num === 1 ? 'photo-preview' : 'photo-preview-2');
-  previewEl.style.display = 'none';
-  videoEl.style.display = 'block';
-  if (num === 1) fotoCapturada1 = null;
-  else fotoCapturada2 = null;
-  document.getElementById('btn-retake-' + num).style.display = 'none';
-  document.getElementById('btn-start-cam-' + num).style.display = 'inline-block';
-  if (num === 2) document.getElementById('btn-comparar').style.display = 'none';
-}
-
-function showAlert(id, msg, tipo = 'error') {
-  const el = document.getElementById(id);
-  el.textContent = msg;
-  el.style.display = 'block';
-  el.className = 'alert alert-' + tipo;
-  setTimeout(() => el.style.display = 'none', 4000);
-}
-
-async function guardarRegistro() {
-  const nombre = document.getElementById('nombre-input').value.trim();
-
-  if (!tipoSeleccionado) return showAlert('alert-registro', 'Selecciona Entrada o Salida.');
-  if (!nombre) return showAlert('alert-registro', 'Escribe el nombre del trabajador.');
-  if (!fotoCapturada1) return showAlert('alert-registro', 'Toma una fotografía del trabajador.');
-
-  document.getElementById('loading-registro').style.display = 'block';
-
-  const registro = {
-    nombre: nombre,
-    tipo: tipoSeleccionado,
-    foto: fotoCapturada1,
-    timestamp: Date.now(),
-    fecha: new Date().toLocaleDateString('es-MX'),
-    hora: new Date().toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit' }),
-    pago: null
-  };
-
-  registros.push(registro);
-  localStorage.setItem(DB_KEY, JSON.stringify(registros));
-
-  await new Promise(r => setTimeout(r, 600));
-  document.getElementById('loading-registro').style.display = 'none';
-
-  showAlert('alert-registro-ok', `✅ ${nombre} registrado como ${tipoSeleccionado} a las ${registro.hora}`, 'success');
-
-  document.getElementById('nombre-input').value = '';
-  fotoCapturada1 = null;
-  tipoSeleccionado = null;
-  document.getElementById('btn-entrada').className = 'tipo-btn';
-  document.getElementById('btn-salida').className = 'tipo-btn';
-  document.getElementById('photo-preview').style.display = 'none';
-  document.getElementById('video').style.display = 'block';
-  document.getElementById('btn-retake-1').style.display = 'none';
-  document.getElementById('btn-start-cam-1').style.display = 'inline-block';
-}
-
-function buscarTrabajador() {
-  const q = document.getElementById('buscar-input').value.trim().toLowerCase();
-  if (!q) return showAlert('alert-verificar', 'Escribe un nombre para buscar.');
-
-  const hoy = new Date().toLocaleDateString('es-MX');
-  const encontrado = registros.find(r =>
-    r.fecha === hoy && r.tipo === 'entrada' &&
-    r.nombre.toLowerCase().includes(q)
-  );
-
-  if (!encontrado) {
-    showAlert('alert-verificar', 'No se encontró ninguna entrada registrada hoy con ese nombre.');
-    document.getElementById('trabajador-encontrado').style.display = 'none';
-    return;
-  }
-
-  trabajadorActual = encontrado;
-  document.getElementById('nombre-encontrado').textContent = encontrado.nombre;
-  document.getElementById('hora-entrada-encontrado').textContent = encontrado.hora;
-  document.getElementById('foto-entrada-preview').src = encontrado.foto;
-  document.getElementById('trabajador-encontrado').style.display = 'block';
-  document.getElementById('resultado-verificacion').style.display = 'none';
-  document.getElementById('btn-autorizar').style.display = 'none';
-  document.getElementById('btn-comparar').style.display = 'none';
-  fotoCapturada2 = null;
-  document.getElementById('photo-preview-2').style.display = 'none';
-  document.getElementById('video2').style.display = 'block';
-  document.getElementById('btn-start-cam-2').style.display = 'inline-block';
-  document.getElementById('btn-capture-2').style.display = 'none';
-  document.getElementById('btn-retake-2').style.display = 'none';
-}
-
-async function loadModels() {
-  if (modelsLoaded) return true;
+async function initModels() {
   try {
     const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.13/model';
+    document.getElementById('init-msg').textContent = 'Cargando modelos de reconocimiento facial...';
     await Promise.all([
       faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
       faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
       faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL)
     ]);
     modelsLoaded = true;
-    return true;
+    document.getElementById('status-dot').className = 'status-dot status-ready';
+    document.getElementById('init-loading').style.display = 'none';
+    document.getElementById('tab-registro').classList.add('active');
   } catch(e) {
-    return false;
+    document.getElementById('init-msg').textContent = 'Error cargando IA. Recarga la página.';
+    console.error(e);
   }
 }
 
-async function compararRostros() {
-  if (!fotoCapturada2) return showAlert('alert-verificar', 'Toma la foto de salida primero.');
-  if (!trabajadorActual) return;
+// ========== UTILS ==========
+function getHoy() {
+  return new Date().toLocaleDateString('es-MX', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+}
+function getHora() {
+  return new Date().toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+}
+function getHoraCorta() {
+  return new Date().toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit' });
+}
+function getFecha() {
+  return new Date().toLocaleDateString('es-MX');
+}
 
-  document.getElementById('loading-verificar').style.display = 'block';
-  document.getElementById('btn-comparar').style.display = 'none';
-  document.getElementById('resultado-verificacion').style.display = 'none';
+function showAlert(id, msg, tipo = 'error') {
+  const el = document.getElementById(id);
+  el.innerHTML = msg;
+  el.style.display = 'block';
+  el.className = 'alert alert-' + tipo;
+  setTimeout(() => el.style.display = 'none', 5000);
+}
 
-  const loaded = await loadModels();
+function switchTab(tab, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (tab === 'historial') actualizarHistorial();
+  if (tab === 'verificar') actualizarListaEntradas();
+}
 
-  if (!loaded) {
-    document.getElementById('loading-verificar').style.display = 'none';
-    mostrarResultadoManual();
-    return;
-  }
+function saveAll() {
+  localStorage.setItem(DB_REG, JSON.stringify(registros));
+  localStorage.setItem(DB_WORKERS, JSON.stringify(workers));
+  localStorage.setItem(DB_PHOTOS, JSON.stringify(photoHistory));
+}
 
+async function enviarASheets(data) {
   try {
-    const img1 = await cargarImagen(trabajadorActual.foto);
-    const img2 = await cargarImagen(fotoCapturada2);
+    await fetch(SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(data)
+    });
+    return true;
+  } catch(e) { return false; }
+}
 
-    const det1 = await faceapi.detectSingleFace(img1, new faceapi.TinyFaceDetectorOptions())
-      .withFaceLandmarks(true).withFaceDescriptor();
-    const det2 = await faceapi.detectSingleFace(img2, new faceapi.TinyFaceDetectorOptions())
-      .withFaceLandmarks(true).withFaceDescriptor();
-
-    document.getElementById('loading-verificar').style.display = 'none';
-
-    if (!det1 || !det2) {
-      mostrarResultadoManual();
-      return;
-    }
-
-    const distancia = faceapi.euclideanDistance(det1.descriptor, det2.descriptor);
-    const similitud = Math.max(0, Math.min(100, Math.round((1 - distancia) * 100)));
-    const autorizado = distancia < 0.5;
-
-    mostrarResultado(autorizado, similitud, distancia);
+// ========== CAMERA ==========
+async function startCam(num) {
+  try {
+    const vid = document.getElementById('video' + num);
+    if (streams[num]) streams[num].getTracks().forEach(t => t.stop());
+    const s = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }
+    });
+    streams[num] = s;
+    vid.srcObject = s;
+    document.getElementById('btn-open-' + num).style.display = 'none';
+    document.getElementById('btn-snap-' + num).style.display = 'inline-block';
   } catch(e) {
-    document.getElementById('loading-verificar').style.display = 'none';
-    mostrarResultadoManual();
+    showAlert(num === 1 ? 'alert-reg' : 'alert-ver', 'No se pudo acceder a la cámara.');
   }
 }
 
-function cargarImagen(src) {
-  return new Promise((resolve, reject) => {
+function capture(num) {
+  const vid = document.getElementById('video' + num);
+  const can = document.getElementById('canvas' + num);
+  const prev = document.getElementById('preview' + num);
+  can.width = vid.videoWidth || 640;
+  can.height = vid.videoHeight || 480;
+  const ctx = can.getContext('2d');
+  ctx.save(); ctx.translate(can.width, 0); ctx.scale(-1, 1);
+  ctx.drawImage(vid, 0, 0); ctx.restore();
+  const dataUrl = can.toDataURL('image/jpeg', 0.7);
+  fotos[num] = dataUrl;
+  prev.src = dataUrl; prev.style.display = 'block';
+  vid.style.display = 'none';
+  if (streams[num]) streams[num].getTracks().forEach(t => t.stop());
+  document.getElementById('btn-snap-' + num).style.display = 'none';
+  document.getElementById('btn-redo-' + num).style.display = 'inline-block';
+
+  if (num === 1) {
+    document.getElementById('btn-analizar').style.display = 'block';
+    document.getElementById('btn-registrar').style.display = 'none';
+    document.getElementById('recog-result').style.display = 'none';
+    document.getElementById('nombre-card').style.display = 'none';
+    reconocido = null;
+  }
+  if (num === 2) {
+    document.getElementById('btn-comparar').style.display = 'block';
+  }
+}
+
+function retake(num) {
+  const vid = document.getElementById('video' + num);
+  const prev = document.getElementById('preview' + num);
+  prev.style.display = 'none'; vid.style.display = 'block';
+  fotos[num] = null; descriptors[num] = null;
+  document.getElementById('btn-redo-' + num).style.display = 'none';
+  document.getElementById('btn-open-' + num).style.display = 'inline-block';
+  if (num === 1) {
+    document.getElementById('btn-analizar').style.display = 'none';
+    document.getElementById('btn-registrar').style.display = 'none';
+    document.getElementById('recog-result').style.display = 'none';
+    document.getElementById('nombre-card').style.display = 'none';
+  }
+  if (num === 2) {
+    document.getElementById('btn-comparar').style.display = 'none';
+    document.getElementById('btn-autorizar').style.display = 'none';
+  }
+}
+
+// ========== FACE DETECTION ==========
+async function getDescriptor(imgSrc) {
+  const img = await loadImage(imgSrc);
+  const det = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions())
+    .withFaceLandmarks(true).withFaceDescriptor();
+  if (!det) return null;
+  return Array.from(det.descriptor);
+}
+
+function loadImage(src) {
+  return new Promise((res, rej) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
-    img.onload = () => resolve(img);
-    img.onerror = reject;
+    img.onload = () => res(img);
+    img.onerror = rej;
     img.src = src;
   });
 }
 
-function mostrarResultado(autorizado, similitud, distancia) {
-  const card = document.getElementById('resultado-verificacion');
-  const horaEntrada = trabajadorActual.hora;
-  const horaSalida = new Date().toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit' });
+function distance(d1, d2) {
+  let sum = 0;
+  for (let i = 0; i < d1.length; i++) sum += (d1[i] - d2[i]) ** 2;
+  return Math.sqrt(sum);
+}
 
-  card.className = 'resultado-card ' + (autorizado ? 'autorizado' : 'rechazado');
-  document.getElementById('resultado-icon').textContent = autorizado ? '✅' : '❌';
-  document.getElementById('resultado-titulo').textContent = autorizado ? 'PAGO AUTORIZADO' : 'PAGO RECHAZADO';
-  document.getElementById('resultado-info1').textContent = trabajadorActual.nombre;
-  document.getElementById('resultado-info2').textContent = `Entrada: ${horaEntrada} → Salida: ${horaSalida}`;
-  document.getElementById('resultado-score').textContent = `Similitud: ${similitud}% ${autorizado ? '✓' : '✗'}`;
+// ========== ANTI-FRAUD: DUPLICATE PHOTO ==========
+function checkDuplicate(desc) {
+  const now = Date.now();
+  const recent = photoHistory.filter(p => (now - p.ts) < CLEANUP_DAYS * 86400000);
+  for (const p of recent) {
+    const d = distance(desc, p.desc);
+    if (d < DUPLICATE_THRESHOLD) {
+      return { duplicate: true, nombre: p.nombre, dist: d };
+    }
+  }
+  return { duplicate: false };
+}
+
+// ========== RECOGNIZE WORKER ==========
+function findWorker(desc) {
+  let best = null, bestDist = Infinity;
+  for (const w of workers) {
+    const d = distance(desc, w.descriptor);
+    if (d < bestDist) { bestDist = d; best = w; }
+  }
+  if (best && bestDist < MATCH_THRESHOLD) {
+    return { found: true, worker: best, dist: bestDist };
+  }
+  return { found: false };
+}
+
+// ========== ENTRADA: ANALYZE FACE ==========
+async function analizarRostro() {
+  if (!fotos[1]) return;
+  if (!modelsLoaded) return showAlert('alert-reg', 'IA aún cargando, espera...');
+
+  document.getElementById('loading-reg').style.display = 'block';
+  document.getElementById('loading-reg-msg').textContent = 'Analizando rostro...';
+  document.getElementById('btn-analizar').style.display = 'none';
+
+  const desc = await getDescriptor(fotos[1]);
+  if (!desc) {
+    document.getElementById('loading-reg').style.display = 'none';
+    document.getElementById('btn-analizar').style.display = 'block';
+    return showAlert('alert-reg', 'No se detectó un rostro. Toma otra foto con mejor luz.');
+  }
+
+  descriptors[1] = desc;
+
+  // Check duplicate
+  document.getElementById('loading-reg-msg').textContent = 'Verificando anti-fraude...';
+  const dup = checkDuplicate(desc);
+  if (dup.duplicate) {
+    document.getElementById('loading-reg').style.display = 'none';
+    document.getElementById('recog-result').innerHTML = `
+      <div class="fraud-alert">
+        <div class="fraud-icon">🚨</div>
+        <div class="fraud-title">FOTO REPETIDA DETECTADA</div>
+        <div class="fraud-sub">Esta foto ya fue usada anteriormente${dup.nombre ? ' (posible: ' + dup.nombre + ')' : ''}. Toma una foto en vivo.</div>
+      </div>`;
+    document.getElementById('recog-result').style.display = 'block';
+    document.getElementById('btn-analizar').style.display = 'none';
+    return;
+  }
+
+  // Try to recognize
+  document.getElementById('loading-reg-msg').textContent = 'Buscando en base de datos...';
+  const match = findWorker(desc);
+
+  document.getElementById('loading-reg').style.display = 'none';
+
+  if (match.found) {
+    reconocido = match.worker;
+    const sim = Math.round((1 - match.dist) * 100);
+    document.getElementById('recog-result').innerHTML = `
+      <div class="worker-match">
+        ${match.worker.foto ? `<img src="${match.worker.foto}" alt="">` : '<div class="registro-foto-placeholder">👤</div>'}
+        <div class="worker-match-info">
+          <div class="match-name">¡Hola, ${match.worker.nombre}!</div>
+          <div class="match-sub">Reconocido automáticamente · ${sim}% similitud</div>
+        </div>
+      </div>`;
+    document.getElementById('recog-result').style.display = 'block';
+    document.getElementById('nombre-card').style.display = 'none';
+    document.getElementById('btn-registrar').style.display = 'block';
+    document.getElementById('btn-registrar').textContent = '✅ Registrar entrada de ' + match.worker.nombre;
+  } else {
+    reconocido = null;
+    document.getElementById('recog-result').innerHTML = `
+      <div class="card" style="background:rgba(243,156,18,0.1);border:1px solid var(--warning);text-align:center;padding:14px">
+        <span style="font-size:24px">🆕</span>
+        <div style="font-weight:700;color:var(--warning);margin-top:6px">Trabajador nuevo</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:4px">No se encontró en la base de datos. Ingresa su nombre.</div>
+      </div>`;
+    document.getElementById('recog-result').style.display = 'block';
+    document.getElementById('nombre-card').style.display = 'block';
+    document.getElementById('btn-registrar').style.display = 'block';
+    document.getElementById('btn-registrar').textContent = '✅ Registrar entrada';
+  }
+}
+
+// ========== ENTRADA: SAVE ==========
+async function procesarEntrada() {
+  let nombre;
+  if (reconocido) {
+    nombre = reconocido.nombre;
+  } else {
+    nombre = document.getElementById('nombre-input').value.trim();
+    if (!nombre) return showAlert('alert-reg', 'Escribe el nombre del trabajador.');
+  }
+
+  if (!descriptors[1]) return showAlert('alert-reg', 'Primero analiza el rostro.');
+
+  document.getElementById('loading-reg').style.display = 'block';
+  document.getElementById('loading-reg-msg').textContent = 'Guardando...';
+  document.getElementById('btn-registrar').style.display = 'none';
+
+  // Save to workers DB if new
+  if (!reconocido) {
+    workers.push({
+      nombre: nombre,
+      descriptor: descriptors[1],
+      foto: fotos[1],
+      createdAt: Date.now()
+    });
+  }
+
+  // Save to photo history (anti-fraud)
+  photoHistory.push({
+    desc: descriptors[1],
+    ts: Date.now(),
+    nombre: nombre
+  });
+
+  // Save registro
+  const reg = {
+    nombre: nombre,
+    tipo: 'entrada',
+    foto: fotos[1],
+    descriptor: descriptors[1],
+    timestamp: Date.now(),
+    fecha: getFecha(),
+    hora: getHoraCorta(),
+    pago: null
+  };
+  registros.push(reg);
+  saveAll();
+
+  // Send to Sheets
+  await enviarASheets({
+    nombre: reg.nombre, tipo: 'entrada',
+    fecha: reg.fecha, hora: reg.hora,
+    pago: '', horaEntrada: '', foto: reg.foto
+  });
+
+  document.getElementById('loading-reg').style.display = 'none';
+  showAlert('alert-reg', `✅ ${nombre} registrado — entrada a las ${reg.hora}`, 'success');
+
+  // Reset form
+  document.getElementById('nombre-input').value = '';
+  fotos[1] = null; descriptors[1] = null; reconocido = null;
+  document.getElementById('preview1').style.display = 'none';
+  document.getElementById('video1').style.display = 'block';
+  document.getElementById('btn-redo-1').style.display = 'none';
+  document.getElementById('btn-open-1').style.display = 'inline-block';
+  document.getElementById('recog-result').style.display = 'none';
+  document.getElementById('nombre-card').style.display = 'none';
+  document.getElementById('btn-registrar').style.display = 'none';
+}
+
+// ========== SALIDA: LIST ==========
+function actualizarListaEntradas() {
+  const hoy = getFecha();
+  const entradas = registros.filter(r => r.fecha === hoy && r.tipo === 'entrada');
+  const salidas = registros.filter(r => r.fecha === hoy && r.tipo === 'salida');
+  const nombresConSalida = salidas.map(s => s.nombre.toLowerCase());
+  const pendientes = entradas.filter(e => !nombresConSalida.includes(e.nombre.toLowerCase()));
+  document.getElementById('count-pendientes').textContent = pendientes.length;
+  renderListaEntradas(pendientes);
+}
+
+function filtrarLista() {
+  const q = document.getElementById('buscar-input').value.trim().toLowerCase();
+  const hoy = getFecha();
+  const entradas = registros.filter(r => r.fecha === hoy && r.tipo === 'entrada');
+  const salidas = registros.filter(r => r.fecha === hoy && r.tipo === 'salida');
+  const nombresConSalida = salidas.map(s => s.nombre.toLowerCase());
+  let pendientes = entradas.filter(e => !nombresConSalida.includes(e.nombre.toLowerCase()));
+  if (q) pendientes = pendientes.filter(e => e.nombre.toLowerCase().includes(q));
+  renderListaEntradas(pendientes);
+}
+
+function renderListaEntradas(lista) {
+  const c = document.getElementById('lista-entradas-hoy');
+  if (!lista.length) {
+    c.innerHTML = '<div class="empty-state"><div class="empty-icon">✅</div><div>No hay pendientes</div></div>';
+    return;
+  }
+  c.innerHTML = lista.map(r => {
+    const isKnown = workers.some(w => w.nombre.toLowerCase() === r.nombre.toLowerCase());
+    return `
+    <div class="registro-item" style="cursor:pointer" onclick="seleccionarParaSalida('${r.nombre.replace(/'/g, "\\'")}')">
+      ${r.foto ? `<img class="registro-foto" src="${r.foto}" alt="">` : '<div class="registro-foto-placeholder">👤</div>'}
+      <div class="registro-info">
+        <div class="registro-nombre">${r.nombre}${isKnown ? '<span class="known-badge">CONOCIDO</span>' : ''}</div>
+        <div class="registro-meta">Entrada: ${r.hora}</div>
+      </div>
+      <span style="color:var(--accent);font-size:20px">→</span>
+    </div>`;
+  }).join('');
+}
+
+function seleccionarParaSalida(nombre) {
+  const hoy = getFecha();
+  const reg = registros.find(r => r.fecha === hoy && r.tipo === 'entrada' && r.nombre === nombre);
+  if (!reg) return;
+
+  trabajadorActual = reg;
+  document.getElementById('nombre-sel').textContent = reg.nombre;
+  document.getElementById('hora-sel').textContent = reg.hora;
+  document.getElementById('foto-sel').src = reg.foto || '';
+  document.getElementById('verificar-panel').style.display = 'block';
+  document.getElementById('resultado-ver').style.display = 'none';
+  document.getElementById('btn-autorizar').style.display = 'none';
+  document.getElementById('btn-comparar').style.display = 'none';
+  document.getElementById('fraud-box').style.display = 'none';
+  fotos[2] = null; descriptors[2] = null;
+  document.getElementById('preview2').style.display = 'none';
+  document.getElementById('video2').style.display = 'block';
+  document.getElementById('btn-open-2').style.display = 'inline-block';
+  document.getElementById('btn-snap-2').style.display = 'none';
+  document.getElementById('btn-redo-2').style.display = 'none';
+}
+
+// ========== SALIDA: COMPARE ==========
+async function compararSalida() {
+  if (!fotos[2] || !trabajadorActual) return;
+  if (!modelsLoaded) return showAlert('alert-ver', 'IA aún cargando...');
+
+  document.getElementById('loading-ver').style.display = 'block';
+  document.getElementById('btn-comparar').style.display = 'none';
+
+  const desc2 = await getDescriptor(fotos[2]);
+  if (!desc2) {
+    document.getElementById('loading-ver').style.display = 'none';
+    document.getElementById('btn-comparar').style.display = 'block';
+    return showAlert('alert-ver', 'No se detectó rostro. Toma otra foto.');
+  }
+
+  descriptors[2] = desc2;
+
+  // Anti-fraud check
+  const dup = checkDuplicate(desc2);
+  if (dup.duplicate) {
+    document.getElementById('loading-ver').style.display = 'none';
+    document.getElementById('fraud-box').innerHTML = `
+      <div class="fraud-alert">
+        <div class="fraud-icon">🚨</div>
+        <div class="fraud-title">FOTO REPETIDA DETECTADA</div>
+        <div class="fraud-sub">Esta foto ya fue usada. Toma una foto en vivo.</div>
+      </div>`;
+    document.getElementById('fraud-box').style.display = 'block';
+    return;
+  }
+
+  // Compare with entry photo
+  const desc1 = trabajadorActual.descriptor;
+  if (!desc1) {
+    document.getElementById('loading-ver').style.display = 'none';
+    mostrarResultadoVer(true, 0, 'manual');
+    return;
+  }
+
+  const dist = distance(desc1, desc2);
+  const sim = Math.max(0, Math.min(100, Math.round((1 - dist) * 100)));
+  const autorizado = dist < VERIFY_THRESHOLD;
+
+  document.getElementById('loading-ver').style.display = 'none';
+  mostrarResultadoVer(autorizado, sim, dist);
+}
+
+function mostrarResultadoVer(autorizado, sim, dist) {
+  const card = document.getElementById('resultado-ver');
+  const horaSalida = getHoraCorta();
+
+  if (dist === 'manual') {
+    card.className = 'resultado-card reconocido';
+    card.innerHTML = `
+      <div class="resultado-icon">👁️</div>
+      <div class="resultado-titulo">VERIFICACIÓN MANUAL</div>
+      <div class="resultado-info">Sin descriptor de entrada. Compara visualmente.</div>
+      <div class="resultado-info">Entrada: ${trabajadorActual.hora} → Salida: ${horaSalida}</div>`;
+  } else {
+    card.className = 'resultado-card ' + (autorizado ? 'autorizado' : 'rechazado');
+    card.innerHTML = `
+      <div class="resultado-icon">${autorizado ? '✅' : '❌'}</div>
+      <div class="resultado-titulo">${autorizado ? 'IDENTIDAD CONFIRMADA' : 'IDENTIDAD NO COINCIDE'}</div>
+      <div class="resultado-info">${trabajadorActual.nombre}</div>
+      <div class="resultado-info">Entrada: ${trabajadorActual.hora} → Salida: ${horaSalida}</div>
+      <div class="resultado-score" style="${autorizado ? 'background:rgba(46,204,113,0.2);color:var(--success)' : 'background:rgba(231,76,60,0.2);color:var(--danger)'}">Similitud: ${sim}%</div>`;
+  }
   card.style.display = 'block';
 
-  if (autorizado) {
+  if (autorizado || dist === 'manual') {
     document.getElementById('btn-autorizar').style.display = 'block';
   }
 }
 
-function mostrarResultadoManual() {
-  const card = document.getElementById('resultado-verificacion');
-  card.className = 'resultado-card autorizado';
-  document.getElementById('resultado-icon').textContent = '👁️';
-  document.getElementById('resultado-titulo').textContent = 'VERIFICACIÓN MANUAL';
-  document.getElementById('resultado-info1').textContent = 'No se detectó rostro automáticamente.';
-  document.getElementById('resultado-info2').textContent = 'Compara las fotos visualmente.';
-  document.getElementById('resultado-score').textContent = 'Decide manualmente';
-  card.style.display = 'block';
-  document.getElementById('btn-autorizar').style.display = 'block';
-}
-
-function autorizarPago() {
+// ========== SALIDA: AUTHORIZE ==========
+async function autorizarPago() {
   if (!trabajadorActual) return;
-  const horaSalida = new Date().toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit' });
+  const horaSalida = getHoraCorta();
 
-  const salidaRegistro = {
+  // Save photo to history
+  if (descriptors[2]) {
+    photoHistory.push({ desc: descriptors[2], ts: Date.now(), nombre: trabajadorActual.nombre });
+  }
+
+  const reg = {
     nombre: trabajadorActual.nombre,
     tipo: 'salida',
-    foto: fotoCapturada2,
+    foto: fotos[2],
     timestamp: Date.now(),
-    fecha: new Date().toLocaleDateString('es-MX'),
+    fecha: getFecha(),
     hora: horaSalida,
     pago: 'autorizado',
     horaEntrada: trabajadorActual.hora
   };
 
-  registros.push(salidaRegistro);
-  localStorage.setItem(DB_KEY, JSON.stringify(registros));
+  registros.push(reg);
+  saveAll();
 
-  showAlert('alert-verificar-ok', `💰 Pago autorizado para ${trabajadorActual.nombre}`, 'success');
+  await enviarASheets({
+    nombre: reg.nombre, tipo: 'salida',
+    fecha: reg.fecha, hora: reg.hora,
+    pago: 'autorizado', horaEntrada: reg.horaEntrada,
+    foto: reg.foto
+  });
+
+  showAlert('alert-ver', `💰 Pago autorizado — ${trabajadorActual.nombre}`, 'success');
   document.getElementById('btn-autorizar').style.display = 'none';
-  document.getElementById('trabajador-encontrado').style.display = 'none';
-  document.getElementById('buscar-input').value = '';
+  document.getElementById('verificar-panel').style.display = 'none';
   trabajadorActual = null;
+  actualizarListaEntradas();
 }
 
+// ========== HISTORIAL ==========
 function actualizarHistorial() {
-  const hoy = new Date().toLocaleDateString('es-MX');
-  const hoy_registros = registros.filter(r => r.fecha === hoy);
-
-  const entradas = hoy_registros.filter(r => r.tipo === 'entrada').length;
-  const salidas = hoy_registros.filter(r => r.tipo === 'salida').length;
-  const autorizados = hoy_registros.filter(r => r.pago === 'autorizado').length;
-  const rechazados = hoy_registros.filter(r => r.pago === 'rechazado').length;
-
-  document.getElementById('stat-entradas').textContent = entradas;
-  document.getElementById('stat-salidas').textContent = salidas;
-  document.getElementById('stat-autorizados').textContent = autorizados;
-  document.getElementById('stat-rechazados').textContent = rechazados;
+  const hoy = getFecha();
+  const hoyR = registros.filter(r => r.fecha === hoy);
+  document.getElementById('stat-entradas').textContent = hoyR.filter(r => r.tipo === 'entrada').length;
+  document.getElementById('stat-salidas').textContent = hoyR.filter(r => r.tipo === 'salida').length;
+  document.getElementById('stat-autorizados').textContent = hoyR.filter(r => r.pago === 'autorizado').length;
+  document.getElementById('stat-conocidos').textContent = workers.length;
 
   const lista = document.getElementById('lista-registros');
-  if (hoy_registros.length === 0) {
+  if (!hoyR.length) {
     lista.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div>Sin registros hoy</div></div>';
     return;
   }
-
-  const sorted = [...hoy_registros].reverse();
-  lista.innerHTML = sorted.map(r => `
+  lista.innerHTML = [...hoyR].reverse().map(r => `
     <div class="registro-item">
       ${r.foto ? `<img class="registro-foto" src="${r.foto}" alt="">` : '<div class="registro-foto-placeholder">👤</div>'}
       <div class="registro-info">
         <div class="registro-nombre">${r.nombre}</div>
-        <div class="registro-meta">${r.hora}</div>
-        ${r.horaEntrada ? `<div class="registro-meta">Entrada: ${r.horaEntrada}</div>` : ''}
+        <div class="registro-meta">${r.hora}${r.horaEntrada ? ' · Entrada: ' + r.horaEntrada : ''}</div>
       </div>
       <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
         <span class="badge badge-${r.tipo}">${r.tipo.toUpperCase()}</span>
         ${r.pago ? `<span class="badge badge-${r.pago}">${r.pago.toUpperCase()}</span>` : ''}
       </div>
-    </div>
-  `).join('');
+    </div>`).join('');
 }
 
-function exportarDatos() {
-  const hoy = new Date().toLocaleDateString('es-MX');
-  const datos = registros.filter(r => r.fecha === hoy);
-
-  if (datos.length === 0) {
-    showAlert('alert-verificar', 'No hay registros del día para exportar.');
-    return;
+// ========== CLEANUP ==========
+function autoCleanup() {
+  const cutoff = Date.now() - (CLEANUP_DAYS * 86400000);
+  const before = photoHistory.length;
+  photoHistory = photoHistory.filter(p => p.ts > cutoff);
+  if (photoHistory.length !== before) {
+    localStorage.setItem(DB_PHOTOS, JSON.stringify(photoHistory));
+    console.log(`Limpieza automática: ${before - photoHistory.length} fotos antiguas eliminadas`);
   }
+}
 
+function limpiarFotosAntiguas() {
+  const cutoff = Date.now() - (CLEANUP_DAYS * 86400000);
+  const before = photoHistory.length;
+  photoHistory = photoHistory.filter(p => p.ts > cutoff);
+  localStorage.setItem(DB_PHOTOS, JSON.stringify(photoHistory));
+  showAlert('alert-ver', `🧹 Limpieza completada: ${before - photoHistory.length} fotos eliminadas. ${photoHistory.length} restantes.`, 'success');
+}
+
+// ========== EXPORT ==========
+function exportarCSV() {
+  const hoy = getFecha();
+  const datos = registros.filter(r => r.fecha === hoy);
+  if (!datos.length) return alert('No hay registros hoy.');
   const rows = [
-    ['Nombre', 'Tipo', 'Fecha', 'Hora', 'Pago', 'Hora Entrada'],
+    ['Nombre','Tipo','Fecha','Hora','Pago','Hora Entrada'],
     ...datos.map(r => [r.nombre, r.tipo, r.fecha, r.hora, r.pago || '', r.horaEntrada || ''])
   ];
   const csv = rows.map(r => r.join(',')).join('\n');
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url;
+  a.href = URL.createObjectURL(blob);
   a.download = `trabajadores_${hoy.replace(/\//g, '-')}.csv`;
   a.click();
 }
