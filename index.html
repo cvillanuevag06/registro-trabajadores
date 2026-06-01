@@ -392,6 +392,7 @@
 
     <button class="btn btn-secondary" onclick="exportarCSV()" style="margin-top:4px">📊 Exportar CSV</button>
     <button class="btn btn-secondary" onclick="limpiarFotosAntiguas()" style="margin-top:8px">🧹 Limpiar fotos antiguas</button>
+    <button class="btn" onclick="resetConClave()" style="margin-top:8px;background:#B04030;color:white">🗑️ Resetear app</button>
   </div>
 
 </div>
@@ -1031,6 +1032,22 @@ function actualizarHistorial() {
         ${r.pago ? `<span class="badge badge-${r.pago}">${r.pago.toUpperCase()}</span>` : ''}
       </div>
     </div>`).join('');
+}
+
+function resetConClave() {
+  const clave = prompt('Ingresa la clave de administrador:');
+  if (clave === null) return;
+  if (clave !== '123456') {
+    alert('Clave incorrecta.');
+    return;
+  }
+  if (!confirm('¿Seguro que quieres borrar toda la memoria de la app en este dispositivo?')) return;
+  localStorage.clear();
+  registros = [];
+  workers = [];
+  photoHistory = [];
+  alert('✅ App reseteada correctamente.');
+  actualizarHistorial();
 }
 
 // ========== CLEANUP ==========
