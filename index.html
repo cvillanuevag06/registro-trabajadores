@@ -414,6 +414,7 @@
 
     <button class="btn btn-secondary" onclick="exportarCSV()" style="margin-top:4px">📊 Exportar CSV</button>
     <button class="btn btn-secondary" onclick="limpiarFotosAntiguas()" style="margin-top:8px">🧹 Limpiar fotos antiguas</button>
+    <button class="btn" onclick="registroFueraDeHorario()" style="margin-top:8px;background:#6B5240;color:white">⏰ Registrar fuera de horario</button>
     <button class="btn" onclick="resetConClave()" style="margin-top:8px;background:#B04030;color:white">🗑️ Resetear app</button>
   </div>
 
@@ -443,6 +444,7 @@ let trabajadorActual = null;
 let reconocido = null;
 let areaSeleccionada = null;
 let modelsLoaded = false;
+let modoFueraDeHorario = false;
 
 // ========== INIT ==========
 document.getElementById('fecha-actual').textContent = getHoy();
@@ -475,13 +477,26 @@ async function initModels() {
 
 // ========== UTILS ==========
 function dentroDeHorarioEntrada() {
+  if (modoFueraDeHorario) return true;
   const h = new Date().getHours();
   return h >= 7 && h < 9;
 }
 
 function dentroDeHorarioSalida() {
-  const h = new Date().getHours();
-  return h >= 17 && h < 20;
+  return true;
+}
+
+function registroFueraDeHorario() {
+  const clave = prompt('Ingresa la clave de administrador:');
+  if (clave === null) return;
+  if (clave !== '123456') {
+    alert('Clave incorrecta.');
+    return;
+  }
+  modoFueraDeHorario = true;
+  alert('✅ Modo fuera de horario activado. Puedes registrar entradas sin restricción de hora.\n\nEste modo se desactiva al recargar la página.');
+  // Switch to entrada tab
+  switchTab('registro', document.querySelector('.tab'));
 }
 
 function selectArea(area) {
