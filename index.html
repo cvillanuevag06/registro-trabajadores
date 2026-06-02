@@ -876,10 +876,6 @@ async function identificarSalida() {
   if (!fotos[2]) return;
   if (!modelsLoaded) return showAlert('alert-ver', 'IA aún cargando...');
 
-  if (!dentroDeHorarioSalida()) {
-    return showAlert('alert-ver', '⏰ Fuera de horario. Las salidas se registran entre 5:00 PM y 8:00 PM.', 'warning');
-  }
-
   document.getElementById('loading-ver').style.display = 'block';
   document.getElementById('loading-ver-msg').textContent = 'Analizando rostro...';
   document.getElementById('btn-identificar-salida').style.display = 'none';
@@ -1076,22 +1072,35 @@ function actualizarHistorial() {
   document.getElementById('stat-conocidos').textContent = workers.length;
 
   const lista = document.getElementById('lista-registros');
-  if (!hoyR.length) {
+  const entradas = hoyR.filter(r => r.tipo === 'entrada');
+
+  if (!entradas.length) {
     lista.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div>Sin registros hoy</div></div>';
     return;
   }
-  lista.innerHTML = [...hoyR].reverse().map(r => `
-    <div class="registro-item">
-      ${r.foto ? `<img class="registro-foto" src="${r.foto}" alt="">` : '<div class="registro-foto-placeholder">👤</div>'}
-      <div class="registro-info">
-        <div class="registro-nombre">${r.nombre}</div>
-        <div class="registro-meta">${r.hora}${r.horaEntrada ? ' · Entrada: ' + r.horaEntrada : ''}</div>
+
+  lista.innerHTML = entradas.reverse().map(r => {
+    const salida = hoyR.find(s => s.tipo === 'salida' && s.nombre.toLowerCase() === r.nombre.toLowerCase());
+    return `
+    <div class="registro-item" style="flex-direction:column;align-items:flex-start;gap:8px;padding:14px 0">
+      <div style="display:flex;align-items:center;gap:12px;width:100%">
+        ${r.foto ? `<img class="registro-foto" src="${r.foto}" alt="">` : '<div class="registro-foto-placeholder">👤</div>'}
+        <div class="registro-info">
+          <div class="registro-nombre">${r.nombre}</div>
+          <div class="registro-meta">${r.area ? '📍 ' + r.area.charAt(0).toUpperCase() + r.area.slice(1) : ''}</div>
+        </div>
       </div>
-      <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
-        <span class="badge badge-${r.tipo}">${r.tipo.toUpperCase()}</span>
-        ${r.pago ? `<span class="badge badge-${r.pago}">${r.pago.toUpperCase()}</span>` : ''}
+      <div style="display:flex;gap:8px;flex-wrap:wrap;padding-left:56px">
+        <span class="badge badge-entrada">🌅 Entrada ${r.hora}</span>
+        ${salida
+          ? `<span class="badge ${salida.pago === 'autorizado' ? 'badge-autorizado' : 'badge-rechazado'}">
+              🌆 Salida ${salida.hora} · ${salida.pago === 'autorizado' ? '✅ Autorizado' : '❌ Rechazado'}
+             </span>`
+          : `<span class="badge" style="background:rgba(212,160,60,0.15);color:#8A6A10">⏳ Sin salida</span>`
+        }
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 function resetConClave() {
