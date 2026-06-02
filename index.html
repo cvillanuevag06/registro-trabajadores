@@ -200,6 +200,13 @@
     padding: 12px 14px; border-radius: var(--radius-sm);
     font-size: 13px; margin-bottom: 14px; display: none;
   }
+  .tipo-btn {
+    padding: 14px; border-radius: var(--radius-sm); border: 1.5px solid rgba(0,0,0,0.12);
+    background: transparent; color: var(--text2); font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column;
+    align-items: center; gap: 6px;
+  }
+  .tipo-btn.selected { border-color: var(--accent); color: var(--accent); background: rgba(107,82,64,0.1); }
   .alert-error { background: rgba(196,92,74,0.1); border: 1px solid var(--danger); color: #9E3A2A; }
   .alert-success { background: rgba(90,138,74,0.1); border: 1px solid var(--success); color: #3D6830; }
   .alert-warning { background: rgba(212,160,60,0.1); border: 1px solid var(--warning); color: #8A6A10; }
@@ -304,6 +311,21 @@
       <div class="form-group">
         <label>Nombre completo</label>
         <input type="text" id="nombre-input" placeholder="Ej: Juan García López">
+      </div>
+    </div>
+
+    <!-- Área de trabajo -->
+    <div class="card" id="area-card" style="display:none">
+      <div class="card-title">¿A dónde va hoy?</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <button class="tipo-btn" id="btn-fabrica" onclick="selectArea('fabrica')">
+          <span style="font-size:24px">🏭</span>
+          Fábrica
+        </button>
+        <button class="tipo-btn" id="btn-obra" onclick="selectArea('obra')">
+          <span style="font-size:24px">🏗️</span>
+          Obra
+        </button>
       </div>
     </div>
 
@@ -419,6 +441,7 @@ let fotos = {};
 let descriptors = {};
 let trabajadorActual = null;
 let reconocido = null;
+let areaSeleccionada = null;
 let modelsLoaded = false;
 
 // ========== INIT ==========
@@ -451,6 +474,24 @@ async function initModels() {
 }
 
 // ========== UTILS ==========
+function dentroDeHorarioEntrada() {
+  const h = new Date().getHours();
+  return h >= 7 && h < 9;
+}
+
+function dentroDeHorarioSalida() {
+  const h = new Date().getHours();
+  return h >= 17 && h < 20;
+}
+
+function selectArea(area) {
+  areaSeleccionada = area;
+  document.getElementById('btn-fabrica').className = 'tipo-btn' + (area === 'fabrica' ? ' selected' : '');
+  document.getElementById('btn-obra').className = 'tipo-btn' + (area === 'obra' ? ' selected' : '');
+  // Show register button only if area selected
+  document.getElementById('btn-registrar').style.display = 'block';
+}
+
 function getHoy() {
   return new Date().toLocaleDateString('es-MX', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
 }
@@ -634,6 +675,10 @@ async function analizarRostro() {
   if (!fotos[1]) return;
   if (!modelsLoaded) return showAlert('alert-reg', 'IA aún cargando, espera...');
 
+  if (!dentroDeHorarioEntrada()) {
+    return showAlert('alert-reg', '⏰ Fuera de horario. Las entradas se registran entre 7:00 AM y 9:00 AM.', 'warning');
+  }
+
   document.getElementById('loading-reg').style.display = 'block';
   document.getElementById('loading-reg-msg').textContent = 'Analizando rostro...';
   document.getElementById('btn-analizar').style.display = 'none';
@@ -682,7 +727,8 @@ async function analizarRostro() {
       </div>`;
     document.getElementById('recog-result').style.display = 'block';
     document.getElementById('nombre-card').style.display = 'none';
-    document.getElementById('btn-registrar').style.display = 'block';
+    document.getElementById('area-card').style.display = 'block';
+    document.getElementById('btn-registrar').style.display = 'none';
     document.getElementById('btn-registrar').textContent = '✅ Registrar entrada de ' + match.worker.nombre;
   } else {
     reconocido = null;
@@ -694,7 +740,8 @@ async function analizarRostro() {
       </div>`;
     document.getElementById('recog-result').style.display = 'block';
     document.getElementById('nombre-card').style.display = 'block';
-    document.getElementById('btn-registrar').style.display = 'block';
+    document.getElementById('area-card').style.display = 'block';
+    document.getElementById('btn-registrar').style.display = 'none';
     document.getElementById('btn-registrar').textContent = '✅ Registrar entrada';
   }
 }
@@ -716,6 +763,10 @@ async function procesarEntrada() {
   const yaEntro = registros.find(r => r.fecha === hoy && r.tipo === 'entrada' && r.nombre.toLowerCase() === nombre.toLowerCase());
   if (yaEntro) {
     return showAlert('alert-reg', `⚠️ ${nombre} ya tiene entrada registrada hoy a las ${yaEntro.hora}.`, 'warning');
+  }
+
+  if (!areaSeleccionada) {
+    return showAlert('alert-reg', 'Selecciona si el trabajador va a Fábrica u Obra.');
   }
 
   document.getElementById('loading-reg').style.display = 'block';
@@ -743,6 +794,7 @@ async function procesarEntrada() {
   const reg = {
     nombre: nombre,
     tipo: 'entrada',
+    area: areaSeleccionada,
     foto: fotos[1],
     descriptor: descriptors[1],
     timestamp: Date.now(),
@@ -757,6 +809,7 @@ async function procesarEntrada() {
   await enviarASheets({
     nombre: reg.nombre, tipo: 'entrada',
     fecha: reg.fecha, hora: reg.hora,
+    area: reg.area,
     pago: '', horaEntrada: '', foto: reg.foto
   });
 
@@ -765,13 +818,16 @@ async function procesarEntrada() {
 
   // Reset form
   document.getElementById('nombre-input').value = '';
-  fotos[1] = null; descriptors[1] = null; reconocido = null;
+  fotos[1] = null; descriptors[1] = null; reconocido = null; areaSeleccionada = null;
   document.getElementById('preview1').style.display = 'none';
   document.getElementById('video1').style.display = 'block';
   document.getElementById('btn-redo-1').style.display = 'none';
   document.getElementById('btn-open-1').style.display = 'inline-block';
   document.getElementById('recog-result').style.display = 'none';
   document.getElementById('nombre-card').style.display = 'none';
+  document.getElementById('area-card').style.display = 'none';
+  document.getElementById('btn-fabrica').className = 'tipo-btn';
+  document.getElementById('btn-obra').className = 'tipo-btn';
   document.getElementById('btn-registrar').style.display = 'none';
 }
 
@@ -819,6 +875,10 @@ function getPendientes() {
 async function identificarSalida() {
   if (!fotos[2]) return;
   if (!modelsLoaded) return showAlert('alert-ver', 'IA aún cargando...');
+
+  if (!dentroDeHorarioSalida()) {
+    return showAlert('alert-ver', '⏰ Fuera de horario. Las salidas se registran entre 5:00 PM y 8:00 PM.', 'warning');
+  }
 
   document.getElementById('loading-ver').style.display = 'block';
   document.getElementById('loading-ver-msg').textContent = 'Analizando rostro...';
