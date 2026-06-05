@@ -414,7 +414,6 @@
 
     <button class="btn btn-secondary" onclick="exportarCSV()" style="margin-top:4px">📊 Exportar CSV</button>
     <button class="btn btn-secondary" onclick="limpiarFotosAntiguas()" style="margin-top:8px">🧹 Limpiar fotos antiguas</button>
-    <button class="btn" onclick="registroFueraDeHorario()" style="margin-top:8px;background:#6B5240;color:white">⏰ Registrar fuera de horario</button>
     <button class="btn" onclick="resetConClave()" style="margin-top:8px;background:#B04030;color:white">🗑️ Resetear app</button>
   </div>
 
@@ -444,7 +443,6 @@ let trabajadorActual = null;
 let reconocido = null;
 let areaSeleccionada = null;
 let modelsLoaded = false;
-let modoFueraDeHorario = false;
 
 // ========== INIT ==========
 document.getElementById('fecha-actual').textContent = getHoy();
@@ -476,29 +474,6 @@ async function initModels() {
 }
 
 // ========== UTILS ==========
-function dentroDeHorarioEntrada() {
-  if (modoFueraDeHorario) return true;
-  const h = new Date().getHours();
-  return h >= 7 && h < 9;
-}
-
-function dentroDeHorarioSalida() {
-  return true;
-}
-
-function registroFueraDeHorario() {
-  const clave = prompt('Ingresa la clave de administrador:');
-  if (clave === null) return;
-  if (clave !== '123456') {
-    alert('Clave incorrecta.');
-    return;
-  }
-  modoFueraDeHorario = true;
-  alert('✅ Modo fuera de horario activado. Puedes registrar entradas sin restricción de hora.\n\nEste modo se desactiva al recargar la página.');
-  // Switch to entrada tab
-  switchTab('registro', document.querySelector('.tab'));
-}
-
 function selectArea(area) {
   areaSeleccionada = area;
   document.getElementById('btn-fabrica').className = 'tipo-btn' + (area === 'fabrica' ? ' selected' : '');
@@ -689,10 +664,6 @@ function findWorker(desc) {
 async function analizarRostro() {
   if (!fotos[1]) return;
   if (!modelsLoaded) return showAlert('alert-reg', 'IA aún cargando, espera...');
-
-  if (!dentroDeHorarioEntrada()) {
-    return showAlert('alert-reg', '⏰ Fuera de horario. Las entradas se registran entre 7:00 AM y 9:00 AM.', 'warning');
-  }
 
   document.getElementById('loading-reg').style.display = 'block';
   document.getElementById('loading-reg-msg').textContent = 'Analizando rostro...';
