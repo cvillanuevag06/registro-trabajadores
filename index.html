@@ -39,190 +39,101 @@
   }
   .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
   .logo { display: flex; align-items: center; gap: 10px; }
-  .logo-icon {
-    width: 38px; height: 38px; border-radius: 10px;
-    background: #6B5240; display: flex; align-items: center; justify-content: center;
-    font-size: 14px; font-weight: 800; color: white; letter-spacing: -0.5px;
-  }
-  .logo-text { font-size: 17px; font-weight: 700; letter-spacing: -0.3px; color: #F2EDE8; }
+  .logo-icon { width: 38px; height: 38px; border-radius: 10px; background: #6B5240; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; color: white; }
+  .logo-text { font-size: 17px; font-weight: 700; color: #F2EDE8; }
   .logo-sub { font-size: 11px; color: #A89888; margin-top: 1px; }
   .status-dot { width: 8px; height: 8px; border-radius: 50%; }
   .status-loading { background: var(--warning); box-shadow: 0 0 6px var(--warning); }
   .status-ready { background: var(--success); box-shadow: 0 0 6px var(--success); }
   .tabs { display: flex; gap: 4px; background: #1E1510; border-radius: 10px; padding: 4px; }
-  .tab {
-    flex: 1; padding: 8px; border-radius: 7px; border: none;
-    font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;
-    background: transparent; color: #A89888;
-  }
+  .tab { flex: 1; padding: 8px; border-radius: 7px; border: none; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; background: transparent; color: #A89888; }
   .tab.active { background: #6B5240; color: white; }
   .content { padding: 20px; }
   .section { display: none; }
   .section.active { display: block; }
-  .card {
-    background: var(--surface); border-radius: var(--radius); padding: 18px;
-    margin-bottom: 16px; border: 1px solid rgba(0,0,0,0.08);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-  }
-  .card-title {
-    font-size: 13px; font-weight: 600; color: var(--text2);
-    text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 14px;
-  }
-  input[type="text"] {
-    width: 100%; padding: 12px 14px;
-    background: var(--surface2); border: 1px solid rgba(0,0,0,0.12);
-    border-radius: var(--radius-sm); color: var(--text); font-size: 15px;
-    outline: none; transition: border-color 0.2s;
-  }
+  .card { background: var(--surface); border-radius: var(--radius); padding: 18px; margin-bottom: 16px; border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+  .card-title { font-size: 13px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 14px; }
+  input[type="text"] { width: 100%; padding: 12px 14px; background: var(--surface2); border: 1px solid rgba(0,0,0,0.12); border-radius: var(--radius-sm); color: var(--text); font-size: 15px; outline: none; transition: border-color 0.2s; }
   input[type="text"]:focus { border-color: var(--accent); }
   input[type="text"]::placeholder { color: rgba(0,0,0,0.35); }
 
   /* CAMERA */
-  .camera-wrap {
-    position: relative; width: 100%; aspect-ratio: 3/4;
-    border-radius: var(--radius); overflow: hidden; background: #111;
-  }
-  .camera-wrap video {
-    width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1);
-  }
-  .camera-overlay {
-    position: absolute; inset: 0; pointer-events: none;
-    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
-  }
-  .face-guide {
-    width: 55%; aspect-ratio: 3/4; border: 3px solid rgba(255,255,255,0.6);
-    border-radius: 50%;
-  }
-  .face-guide.green { border-color: #4A7A3A; box-shadow: 0 0 20px rgba(74,122,58,0.5); }
-  .face-guide.red { border-color: #B04030; box-shadow: 0 0 20px rgba(176,64,48,0.5); }
-  .liveness-instruction {
-    background: rgba(0,0,0,0.75); color: white;
-    padding: 10px 18px; border-radius: 20px;
-    font-size: 14px; font-weight: 700; text-align: center;
-    max-width: 80%;
-  }
-  .liveness-step-indicator {
-    display: flex; gap: 6px; justify-content: center;
-  }
-  .step-dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: rgba(255,255,255,0.3);
-  }
-  .step-dot.active { background: white; }
-  .step-dot.done { background: #4A7A3A; }
-
+  .camera-wrap { position: relative; width: 100%; aspect-ratio: 3/4; border-radius: var(--radius); overflow: hidden; background: #111; }
+  .camera-wrap video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+  .cam-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; pointer-events: none; }
+  .face-oval { width: 55%; aspect-ratio: 3/4; border: 3px solid rgba(255,255,255,0.5); border-radius: 50%; transition: border-color 0.3s, box-shadow 0.3s; }
+  .face-oval.detected { border-color: #4A7A3A; box-shadow: 0 0 20px rgba(74,122,58,0.6); }
+  .face-oval.warning { border-color: #C49030; box-shadow: 0 0 20px rgba(196,144,48,0.6); }
+  .cam-instruction { background: rgba(0,0,0,0.75); color: white; padding: 10px 18px; border-radius: 20px; font-size: 14px; font-weight: 700; text-align: center; max-width: 85%; }
   canvas { display: none; }
 
+  /* PROGRESS */
+  .progress-bar { background: var(--surface2); border-radius: 20px; height: 6px; margin: 8px 0; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--accent); border-radius: 20px; transition: width 0.3s; }
+  .step-list { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+  .step-item { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--text2); }
+  .step-item.done { color: var(--success); font-weight: 600; }
+  .step-item.active { color: var(--text); font-weight: 700; }
+  .step-num { width: 24px; height: 24px; border-radius: 50%; background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+  .step-item.done .step-num { background: var(--success); color: white; }
+  .step-item.active .step-num { background: var(--accent); color: white; }
+
   /* BUTTONS */
-  .btn {
-    width: 100%; padding: 15px; border-radius: var(--radius-sm);
-    border: none; font-size: 15px; font-weight: 700;
-    cursor: pointer; transition: all 0.2s; letter-spacing: 0.3px;
-  }
+  .btn { width: 100%; padding: 15px; border-radius: var(--radius-sm); border: none; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
   .btn-primary { background: var(--accent); color: white; }
   .btn-secondary { background: transparent; color: var(--text2); border: 1px solid rgba(0,0,0,0.12); }
   .btn-success { background: var(--success); color: white; }
-  .btn-camera { background: var(--accent); color: white; border: none; font-size: 16px; padding: 16px; border-radius: var(--radius-sm); width: 100%; font-weight: 700; cursor: pointer; }
-  .btn-sm { padding: 10px 16px; font-size: 13px; border-radius: var(--radius-sm); border: none; cursor: pointer; font-weight: 600; }
-  .btn-row { display: flex; gap: 10px; margin-top: 14px; }
-  .btn-row .btn { flex: 1; }
-
-  /* TIPO */
+  .btn-danger { background: var(--danger); color: white; }
   .tipo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .tipo-btn {
-    padding: 14px; border-radius: var(--radius-sm); border: 1.5px solid rgba(0,0,0,0.12);
-    background: transparent; color: var(--text2); font-size: 14px; font-weight: 600;
-    cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column;
-    align-items: center; gap: 6px;
-  }
+  .tipo-btn { padding: 14px; border-radius: var(--radius-sm); border: 1.5px solid rgba(0,0,0,0.12); background: transparent; color: var(--text2); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; gap: 6px; }
   .tipo-btn.selected { border-color: var(--accent); color: var(--accent); background: rgba(107,82,64,0.1); }
 
-  /* RESULT CARDS */
-  .result-card {
-    border-radius: var(--radius); padding: 20px; text-align: center; margin-bottom: 16px;
-  }
-  .result-card.success { background: rgba(74,122,58,0.1); border: 1.5px solid var(--success); }
-  .result-card.danger { background: rgba(176,64,48,0.1); border: 1.5px solid var(--danger); }
-  .result-card.info { background: rgba(156,128,96,0.1); border: 1.5px solid #9C8060; }
-  .result-card.warning { background: rgba(196,144,48,0.1); border: 1.5px solid var(--warning); }
-  .result-icon { font-size: 44px; margin-bottom: 10px; }
-  .result-title { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
-  .result-sub { font-size: 13px; color: var(--text2); margin-bottom: 4px; }
+  /* RESULT */
+  .result-box { border-radius: var(--radius); padding: 20px; text-align: center; margin-bottom: 14px; }
+  .result-box.success { background: rgba(74,122,58,0.1); border: 1.5px solid var(--success); }
+  .result-box.danger { background: rgba(176,64,48,0.1); border: 1.5px solid var(--danger); }
+  .result-box.info { background: rgba(107,82,64,0.08); border: 1.5px solid var(--accent); }
+  .result-box.warning { background: rgba(196,144,48,0.1); border: 1.5px solid var(--warning); }
+  .result-icon { font-size: 40px; margin-bottom: 8px; }
+  .result-title { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+  .result-sub { font-size: 13px; color: var(--text2); }
 
-  /* WORKER MATCH */
-  .worker-match {
-    display: flex; align-items: center; gap: 14px; padding: 16px;
-    background: rgba(107,82,64,0.08); border: 1.5px solid var(--accent);
-    border-radius: var(--radius); margin-bottom: 14px;
-  }
-  .worker-match img { width: 56px; height: 56px; border-radius: 10px; object-fit: cover; }
-  .match-name { font-size: 18px; font-weight: 700; color: var(--accent); }
+  .worker-match { display: flex; align-items: center; gap: 14px; padding: 14px; background: rgba(107,82,64,0.08); border: 1.5px solid var(--accent); border-radius: var(--radius); margin-bottom: 14px; }
+  .worker-match img { width: 52px; height: 52px; border-radius: 8px; object-fit: cover; }
+  .match-name { font-size: 17px; font-weight: 700; color: var(--accent); }
   .match-sub { font-size: 12px; color: var(--text2); margin-top: 2px; }
-
-  /* VOICE */
-  .voice-box {
-    background: var(--surface2); border-radius: var(--radius); padding: 20px;
-    text-align: center; margin-bottom: 14px; border: 1.5px dashed rgba(0,0,0,0.15);
-  }
-  .voice-icon { font-size: 36px; margin-bottom: 8px; }
-  .voice-text { font-size: 14px; color: var(--text2); }
-  .voice-listening { border-color: var(--accent); background: rgba(107,82,64,0.05); }
-  .voice-result { font-size: 16px; font-weight: 700; color: var(--text); margin-top: 8px; }
 
   /* HISTORIAL */
   .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
-  .stat-card {
-    background: var(--surface); border-radius: var(--radius-sm); padding: 14px;
-    border: 1px solid rgba(0,0,0,0.08); text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-  }
+  .stat-card { background: var(--surface); border-radius: var(--radius-sm); padding: 14px; border: 1px solid rgba(0,0,0,0.08); text-align: center; }
   .stat-num { font-size: 28px; font-weight: 800; margin-bottom: 4px; }
   .stat-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.6px; }
-  .registro-item { padding: 14px 0; border-bottom: 1px solid rgba(0,0,0,0.06); }
-  .registro-item:last-child { border-bottom: none; }
-  .registro-foto { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
-  .registro-nombre { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
-  .registro-meta { font-size: 12px; color: var(--text2); }
+  .reg-item { padding: 12px 0; border-bottom: 1px solid rgba(0,0,0,0.06); }
+  .reg-item:last-child { border-bottom: none; }
+  .reg-row { display: flex; align-items: center; gap: 12px; }
+  .reg-foto { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
+  .reg-name { font-size: 14px; font-weight: 600; }
+  .reg-meta { font-size: 12px; color: var(--text2); }
   .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
   .badge-entrada { background: rgba(74,122,58,0.15); color: var(--success); }
   .badge-autorizado { background: rgba(74,122,58,0.15); color: var(--success); }
   .badge-rechazado { background: rgba(176,64,48,0.15); color: var(--danger); }
-  .known-badge { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 10px; font-weight: 700; background: rgba(156,128,96,0.2); color: #6B5240; margin-left: 6px; }
+  .badge-pending { background: rgba(196,144,48,0.15); color: #8A6A10; }
 
   /* MISC */
-  .loading { display: none; text-align: center; padding: 20px; color: var(--text2); font-size: 13px; }
+  .loading { display: none; text-align: center; padding: 16px; color: var(--text2); font-size: 13px; }
   .spinner { width: 28px; height: 28px; border: 3px solid rgba(0,0,0,0.1); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 10px; }
   @keyframes spin { to { transform: rotate(360deg); } }
   .alert { padding: 12px 14px; border-radius: var(--radius-sm); font-size: 13px; margin-bottom: 14px; display: none; }
   .alert-error { background: rgba(176,64,48,0.1); border: 1px solid var(--danger); color: #9E3A2A; }
   .alert-success { background: rgba(74,122,58,0.1); border: 1px solid var(--success); color: #3D6830; }
   .alert-warning { background: rgba(196,144,48,0.1); border: 1px solid var(--warning); color: #8A6A10; }
-  .empty-state { text-align: center; padding: 40px 20px; color: var(--text2); font-size: 14px; }
-  .empty-icon { font-size: 40px; margin-bottom: 10px; opacity: 0.4; }
-  .fecha-hora { text-align: center; padding: 10px; font-size: 13px; color: var(--text2); margin-bottom: 4px; }
+  .empty-state { text-align: center; padding: 30px 20px; color: var(--text2); font-size: 14px; }
+  .empty-icon { font-size: 36px; margin-bottom: 8px; opacity: 0.4; }
   .init-screen { text-align: center; padding: 60px 20px; }
   .init-screen .spinner { width: 40px; height: 40px; border-width: 4px; }
   .init-screen p { margin-top: 16px; color: var(--text2); font-size: 14px; }
-
-  /* LIVENESS PROGRESS */
-  .liveness-progress {
-    background: var(--surface2); border-radius: var(--radius); padding: 16px;
-    margin-bottom: 14px;
-  }
-  .progress-step {
-    display: flex; align-items: center; gap: 10px; padding: 8px 0;
-    font-size: 14px; color: var(--text2);
-  }
-  .progress-step.done { color: var(--success); }
-  .progress-step.active { color: var(--text); font-weight: 700; }
-  .step-icon { font-size: 18px; width: 24px; text-align: center; }
-
-  .fraud-alert {
-    padding: 16px; background: rgba(176,64,48,0.1); border: 1.5px solid var(--danger);
-    border-radius: var(--radius); text-align: center; margin-bottom: 14px;
-  }
-  .fraud-icon { font-size: 40px; margin-bottom: 8px; }
-  .fraud-title { font-size: 16px; font-weight: 800; color: var(--danger); margin-bottom: 4px; }
-  .fraud-sub { font-size: 12px; color: var(--text2); }
+  .fraud-box { padding: 16px; background: rgba(176,64,48,0.1); border: 1.5px solid var(--danger); border-radius: var(--radius); text-align: center; margin-bottom: 14px; }
 </style>
 </head>
 <body>
@@ -239,972 +150,535 @@
     <div class="status-dot status-loading" id="status-dot"></div>
   </div>
   <div class="tabs">
-    <button class="tab active" onclick="switchTab('entrada', this)">Entrada</button>
-    <button class="tab" onclick="switchTab('salida', this)">Salida</button>
-    <button class="tab" onclick="switchTab('historial', this)">Historial</button>
+    <button class="tab active" onclick="switchTab('entrada',this)">Entrada</button>
+    <button class="tab" onclick="switchTab('salida',this)">Salida</button>
+    <button class="tab" onclick="switchTab('historial',this)">Historial</button>
   </div>
 </div>
 
 <div class="content">
 
-  <!-- INIT -->
-  <div id="init-loading" class="init-screen">
+  <div id="init-screen" class="init-screen">
     <div class="spinner"></div>
-    <p id="init-msg">Cargando sistema de reconocimiento facial...</p>
+    <p id="init-msg">Cargando IA de reconocimiento facial...</p>
   </div>
 
-  <!-- ===== ENTRADA ===== -->
+  <!-- ENTRADA -->
   <div class="section" id="tab-entrada">
-    <div class="fecha-hora" id="hora-actual">--:--:--</div>
-    <div class="card" style="text-align:center;padding:12px;background:rgba(74,122,58,0.1);border:1px solid var(--success);">
-      <span style="color:var(--success);font-weight:700;font-size:14px;">🌅 REGISTRO DE ENTRADA</span>
+    <div style="text-align:center;font-size:13px;color:var(--text2);padding:8px 0 12px" id="hora-actual">--:--:--</div>
+    <div class="card" style="text-align:center;padding:10px;background:rgba(74,122,58,0.1);border:1px solid var(--success);margin-bottom:14px">
+      <span style="color:var(--success);font-weight:700">🌅 REGISTRO DE ENTRADA</span>
     </div>
 
-    <!-- STEP 1: LIVENESS -->
-    <div id="entrada-liveness" class="card" style="margin-top:12px">
-      <div class="card-title">Verificación de identidad</div>
+    <div class="card" id="cam-card-e">
+      <div class="card-title" id="cam-title-e">Verificación de identidad</div>
       <div class="camera-wrap">
-        <video id="video-entrada" autoplay playsinline></video>
-        <div class="camera-overlay">
-          <div class="face-guide" id="guide-entrada"></div>
-          <div class="liveness-instruction" id="liveness-msg-entrada">Presiona "Iniciar" para comenzar</div>
-          <div class="liveness-step-indicator" id="liveness-dots-entrada"></div>
+        <video id="vid-e" autoplay playsinline></video>
+        <div class="cam-overlay">
+          <div class="face-oval" id="oval-e"></div>
+          <div class="cam-instruction" id="instr-e">Presiona Iniciar</div>
         </div>
       </div>
-      <canvas id="canvas-entrada"></canvas>
-
-      <div class="liveness-progress" id="liveness-progress-entrada" style="display:none">
-        <div class="progress-step" id="step-face"><span class="step-icon">👤</span> Detectando rostro...</div>
-        <div class="progress-step" id="step-blink"><span class="step-icon">👁️</span> Parpadea 2 veces</div>
-        <div class="progress-step" id="step-turn"><span class="step-icon">↔️</span> Gira la cabeza</div>
-        <div class="progress-step" id="step-recog"><span class="step-icon">🔍</span> Identificando persona</div>
+      <canvas id="canvas-e"></canvas>
+      <div class="step-list" id="steps-e" style="display:none">
+        <div class="step-item" id="se1"><div class="step-num">1</div>Detectando rostro</div>
+        <div class="step-item" id="se2"><div class="step-num">2</div>Gira la cabeza lentamente</div>
+        <div class="step-item" id="se3"><div class="step-num">3</div>Mira al frente — identificando</div>
       </div>
-
-      <button class="btn-camera" id="btn-start-entrada" onclick="iniciarEntrada()" style="margin-top:14px">📷 Iniciar verificación</button>
-      <button class="btn btn-secondary" id="btn-retry-entrada" onclick="reiniciarEntrada()" style="display:none;margin-top:10px">↩ Reintentar</button>
+      <button class="btn btn-primary" id="btn-ini-e" onclick="iniciarEntrada()" style="margin-top:14px">📷 Iniciar verificación</button>
+      <button class="btn btn-secondary" id="btn-retry-e" onclick="reiniciarEntrada()" style="display:none;margin-top:10px">↩ Reintentar</button>
     </div>
 
-    <!-- STEP 2: RECOGNITION RESULT -->
-    <div id="entrada-result" style="display:none">
-      <div id="entrada-match-box"></div>
-
-      <!-- New worker name -->
+    <div id="entrada-panel" style="display:none">
+      <div id="entrada-result-box"></div>
       <div class="card" id="nombre-card" style="display:none">
-        <div class="card-title">Trabajador nuevo — Di tu nombre</div>
-        <div class="voice-box" id="voice-box-nombre">
-          <div class="voice-icon">🎤</div>
-          <div class="voice-text">Presiona el botón y di tu nombre completo en voz alta</div>
-          <div class="voice-result" id="voice-nombre-result"></div>
-        </div>
-        <button class="btn-camera" onclick="escucharNombre()" id="btn-voice-nombre">🎤 Decir mi nombre</button>
-        <div style="margin-top:10px">
-          <label style="font-size:13px;color:var(--text2);display:block;margin-bottom:6px">O escríbelo manualmente:</label>
-          <input type="text" id="nombre-input" placeholder="Nombre completo">
-        </div>
+        <div class="card-title">Trabajador nuevo</div>
+        <input type="text" id="nombre-input" placeholder="Escribe el nombre completo">
       </div>
-
-      <!-- Area selection -->
       <div class="card" id="area-card" style="display:none">
         <div class="card-title">¿A dónde va hoy?</div>
         <div class="tipo-grid">
-          <button class="tipo-btn" id="btn-fabrica" onclick="selectArea('fabrica')">
-            <span style="font-size:24px">🏭</span>Fábrica
-          </button>
-          <button class="tipo-btn" id="btn-obra" onclick="selectArea('obra')">
-            <span style="font-size:24px">🏗️</span>Obra
-          </button>
+          <button class="tipo-btn" id="btn-fab" onclick="setArea('fabrica')"><span style="font-size:22px">🏭</span>Fábrica</button>
+          <button class="tipo-btn" id="btn-obra" onclick="setArea('obra')"><span style="font-size:22px">🏗️</span>Obra</button>
         </div>
       </div>
-
-      <div class="alert" id="alert-entrada"></div>
-      <div class="loading" id="loading-entrada"><div class="spinner"></div><span id="loading-entrada-msg">Guardando...</span></div>
-      <button class="btn btn-success" id="btn-registrar" onclick="guardarEntrada()" style="display:none">✅ Confirmar entrada</button>
+      <div class="alert" id="alert-e"></div>
+      <div class="loading" id="load-e"><div class="spinner"></div>Guardando...</div>
+      <button class="btn btn-success" id="btn-reg" onclick="guardarEntrada()" style="display:none">✅ Confirmar entrada</button>
     </div>
   </div>
 
-  <!-- ===== SALIDA ===== -->
+  <!-- SALIDA -->
   <div class="section" id="tab-salida">
-    <div class="card" style="text-align:center;padding:12px;background:rgba(176,64,48,0.1);border:1px solid var(--danger);">
-      <span style="color:var(--danger);font-weight:700;font-size:14px;">🌆 VERIFICACIÓN DE SALIDA</span>
-      <div style="font-size:11px;color:var(--text2);margin-top:4px">Pendientes: <span id="count-pendientes">0</span></div>
+    <div class="card" style="text-align:center;padding:10px;background:rgba(176,64,48,0.1);border:1px solid var(--danger);margin-bottom:14px">
+      <span style="color:var(--danger);font-weight:700">🌆 VERIFICACIÓN DE SALIDA</span>
+      <span style="font-size:11px;color:var(--text2);margin-left:8px">Pendientes: <span id="count-pend">0</span></span>
     </div>
 
-    <div class="card" style="margin-top:12px">
+    <div class="card">
       <div class="card-title">Verificación de identidad</div>
       <div class="camera-wrap">
-        <video id="video-salida" autoplay playsinline></video>
-        <div class="camera-overlay">
-          <div class="face-guide" id="guide-salida"></div>
-          <div class="liveness-instruction" id="liveness-msg-salida">Presiona "Iniciar" para comenzar</div>
+        <video id="vid-s" autoplay playsinline></video>
+        <div class="cam-overlay">
+          <div class="face-oval" id="oval-s"></div>
+          <div class="cam-instruction" id="instr-s">Presiona Iniciar</div>
         </div>
       </div>
-      <canvas id="canvas-salida"></canvas>
-
-      <div class="liveness-progress" id="liveness-progress-salida" style="display:none">
-        <div class="progress-step" id="step-face-s"><span class="step-icon">👤</span> Detectando rostro...</div>
-        <div class="progress-step" id="step-blink-s"><span class="step-icon">👁️</span> Parpadea 2 veces</div>
-        <div class="progress-step" id="step-turn-s"><span class="step-icon">↔️</span> Gira la cabeza</div>
-        <div class="progress-step" id="step-recog-s"><span class="step-icon">🔍</span> Identificando persona</div>
+      <canvas id="canvas-s"></canvas>
+      <div class="step-list" id="steps-s" style="display:none">
+        <div class="step-item" id="ss1"><div class="step-num">1</div>Detectando rostro</div>
+        <div class="step-item" id="ss2"><div class="step-num">2</div>Gira la cabeza lentamente</div>
+        <div class="step-item" id="ss3"><div class="step-num">3</div>Mira al frente — identificando</div>
       </div>
-
-      <button class="btn-camera" id="btn-start-salida" onclick="iniciarSalida()" style="margin-top:14px">📷 Iniciar verificación</button>
-      <button class="btn btn-secondary" id="btn-retry-salida" onclick="reiniciarSalida()" style="display:none;margin-top:10px">↩ Reintentar</button>
+      <button class="btn btn-primary" id="btn-ini-s" onclick="iniciarSalida()" style="margin-top:14px">📷 Iniciar verificación</button>
+      <button class="btn btn-secondary" id="btn-retry-s" onclick="reiniciarSalida()" style="display:none;margin-top:10px">↩ Reintentar</button>
     </div>
 
-    <div id="salida-result" style="display:none">
-      <div id="salida-match-box"></div>
-
-      <!-- Voice confirmation -->
-      <div class="card" id="voice-confirm-card" style="display:none">
-        <div class="card-title">Confirmación de voz</div>
-        <div class="voice-box" id="voice-box-salida">
-          <div class="voice-icon">🎤</div>
-          <div class="voice-text">Di tu nombre en voz alta para confirmar</div>
-          <div class="voice-result" id="voice-salida-result"></div>
-        </div>
-        <button class="btn-camera" onclick="escucharNombreSalida()" id="btn-voice-salida">🎤 Confirmar con voz</button>
-      </div>
-
-      <div id="fraud-box-salida" style="display:none"></div>
-      <div class="result-card" id="resultado-salida" style="display:none"></div>
-      <div class="alert" id="alert-salida"></div>
-      <button class="btn btn-success" id="btn-autorizar" onclick="autorizarPago()" style="display:none;margin-top:10px">💰 Autorizar pago</button>
+    <div id="salida-panel" style="display:none">
+      <div id="salida-result-box"></div>
+      <div class="alert" id="alert-s"></div>
+      <button class="btn btn-success" id="btn-auth" onclick="autorizarPago()" style="display:none;margin-top:10px">💰 Autorizar pago</button>
     </div>
 
-    <!-- List of today entries -->
-    <div class="card" style="margin-top:16px">
+    <div class="card" style="margin-top:4px">
       <div class="card-title">Entradas de hoy</div>
-      <div id="lista-entradas-hoy">
-        <div class="empty-state"><div class="empty-icon">📋</div><div>Sin entradas hoy</div></div>
-      </div>
+      <div id="lista-hoy"><div class="empty-state"><div class="empty-icon">📋</div>Sin entradas</div></div>
     </div>
   </div>
 
-  <!-- ===== HISTORIAL ===== -->
+  <!-- HISTORIAL -->
   <div class="section" id="tab-historial">
     <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-num" id="stat-entradas" style="color:var(--success)">0</div>
-        <div class="stat-label">Entradas hoy</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num" id="stat-salidas" style="color:var(--danger)">0</div>
-        <div class="stat-label">Salidas hoy</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num" id="stat-autorizados" style="color:var(--success)">0</div>
-        <div class="stat-label">Autorizados</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num" id="stat-conocidos" style="color:#9C8060">0</div>
-        <div class="stat-label">Trabajadores guardados</div>
-      </div>
+      <div class="stat-card"><div class="stat-num" id="st-e" style="color:var(--success)">0</div><div class="stat-label">Entradas hoy</div></div>
+      <div class="stat-card"><div class="stat-num" id="st-s" style="color:var(--danger)">0</div><div class="stat-label">Salidas hoy</div></div>
+      <div class="stat-card"><div class="stat-num" id="st-a" style="color:var(--success)">0</div><div class="stat-label">Autorizados</div></div>
+      <div class="stat-card"><div class="stat-num" id="st-w" style="color:#9C8060">0</div><div class="stat-label">Trabajadores</div></div>
     </div>
     <div class="card">
       <div class="card-title">Registros del día</div>
-      <div id="lista-registros">
-        <div class="empty-state"><div class="empty-icon">📋</div><div>Sin registros aún</div></div>
-      </div>
+      <div id="lista-hist"><div class="empty-state"><div class="empty-icon">📋</div>Sin registros</div></div>
     </div>
-    <button class="btn btn-secondary" onclick="exportarCSV()" style="margin-top:4px">📊 Exportar CSV</button>
-    <button class="btn btn-secondary" onclick="limpiarFotosAntiguas()" style="margin-top:8px">🧹 Limpiar fotos antiguas</button>
-    <button class="btn" onclick="resetConClave()" style="margin-top:8px;background:#B04030;color:white">🗑️ Resetear app</button>
+    <button class="btn btn-secondary" onclick="exportCSV()" style="margin-top:4px">📊 Exportar CSV</button>
+    <button class="btn btn-secondary" onclick="limpiarFotos()" style="margin-top:8px">🧹 Limpiar fotos antiguas</button>
+    <button class="btn" onclick="resetApp()" style="margin-top:8px;background:var(--danger);color:white">🗑️ Resetear app</button>
   </div>
 
 </div>
 
 <script>
-// ========== CONFIG ==========
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwR4Zm9rKZiMzXYVVloQlsONpbt_y9kMvnhy0mb4Vam87lNKw7Y_zqE7Syk_16nTw/exec';
-const DUPLICATE_THRESHOLD = 0.12;
-const MATCH_THRESHOLD = 0.55;
-const VERIFY_THRESHOLD = 0.60;
+const DUP_THR = 0.12;
+const MATCH_THR = 0.55;
+const VERIFY_THR = 0.60;
+const HEAD_TURN_THR = 0.08;
 const CLEANUP_DAYS = 14;
-const BLINK_THRESHOLD = 0.22; // EAR below this = eye closed
-const BLINKS_REQUIRED = 2;
-const HEAD_TURN_THRESHOLD = 0.06; // nose tip X shift
 
-// ========== STATE ==========
-const DB_REG = 'ctrl_registros';
-const DB_WORKERS = 'ctrl_workers';
-const DB_PHOTOS = 'ctrl_photo_history';
+const DB_R = 'umma_reg', DB_W = 'umma_workers', DB_P = 'umma_photos';
+let registros = JSON.parse(localStorage.getItem(DB_R)||'[]');
+let workers = JSON.parse(localStorage.getItem(DB_W)||'[]');
+let photos = JSON.parse(localStorage.getItem(DB_P)||'[]');
 
-let registros = JSON.parse(localStorage.getItem(DB_REG) || '[]');
-let workers = JSON.parse(localStorage.getItem(DB_WORKERS) || '[]');
-let photoHistory = JSON.parse(localStorage.getItem(DB_PHOTOS) || '[]');
-
-let streams = {};
 let modelsLoaded = false;
+let eStream = null, sStream = null;
+let eRunning = false, sRunning = false;
+let eDesc = null, eFoto = null, eMatch = null, eArea = null;
+let sDesc = null, sFoto = null, sTrabajador = null;
 
-// Entrada state
-let entradaStream = null;
-let entradaRunning = false;
-let entradaDescriptor = null;
-let entradaFoto = null;
-let entradaReconocido = null;
-let areaSeleccionada = null;
-let nombreVoz = null;
-
-// Salida state
-let salidaStream = null;
-let salidaRunning = false;
-let salidaDescriptor = null;
-let salidaFoto = null;
-let salidaTrabajador = null;
-
-// ========== INIT ==========
+// INIT
 document.getElementById('fecha-actual').textContent = getHoy();
-setInterval(() => { const el = document.getElementById('hora-actual'); if(el) el.textContent = getHora(); }, 1000);
+setInterval(()=>{ const el=document.getElementById('hora-actual'); if(el) el.textContent=getHora(); },1000);
 autoCleanup();
-initModels();
+loadModels();
 
-async function initModels() {
+async function loadModels() {
   try {
-    const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.13/model';
-    document.getElementById('init-msg').textContent = 'Cargando modelos de IA...';
+    const M = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.13/model';
     await Promise.all([
-      faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
-      faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
-      faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL)
+      faceapi.nets.tinyFaceDetector.loadFromUri(M),
+      faceapi.nets.faceRecognitionNet.loadFromUri(M),
+      faceapi.nets.faceLandmark68TinyNet.loadFromUri(M)
     ]);
     modelsLoaded = true;
     document.getElementById('status-dot').className = 'status-dot status-ready';
-    document.getElementById('init-loading').style.display = 'none';
+    document.getElementById('init-screen').style.display = 'none';
     document.getElementById('tab-entrada').classList.add('active');
-    contarPendientes();
+    refreshPendientes();
   } catch(e) {
     document.getElementById('init-msg').textContent = 'Error cargando IA. Recarga la página.';
   }
 }
 
-// ========== UTILS ==========
-function getHoy() { return new Date().toLocaleDateString('es-MX', { weekday:'long', year:'numeric', month:'long', day:'numeric' }); }
-function getHora() { return new Date().toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit', second:'2-digit' }); }
-function getHoraCorta() { return new Date().toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit' }); }
+// UTILS
+function getHoy() { return new Date().toLocaleDateString('es-MX',{weekday:'long',year:'numeric',month:'long',day:'numeric'}); }
+function getHora() { return new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); }
+function getHoraC() { return new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}); }
 function getFecha() { return new Date().toLocaleDateString('es-MX'); }
-function saveAll() {
-  localStorage.setItem(DB_REG, JSON.stringify(registros));
-  localStorage.setItem(DB_WORKERS, JSON.stringify(workers));
-  localStorage.setItem(DB_PHOTOS, JSON.stringify(photoHistory));
+function saveAll() { localStorage.setItem(DB_R,JSON.stringify(registros)); localStorage.setItem(DB_W,JSON.stringify(workers)); localStorage.setItem(DB_P,JSON.stringify(photos)); }
+function showAlert(id,msg,t='error') { const el=document.getElementById(id); el.innerHTML=msg; el.style.display='block'; el.className='alert alert-'+t; setTimeout(()=>el.style.display='none',5000); }
+function switchTab(tab,btn) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  if(btn) btn.classList.add('active');
+  stopStream('e'); stopStream('s');
+  eRunning=false; sRunning=false;
+  if(tab==='historial') updateHistorial();
+  if(tab==='salida') refreshPendientes();
 }
-function showAlert(id, msg, tipo='error') {
-  const el = document.getElementById(id);
-  el.innerHTML = msg; el.style.display = 'block';
-  el.className = 'alert alert-' + tipo;
-  setTimeout(() => el.style.display = 'none', 5000);
-}
-function switchTab(tab, btn) {
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('tab-' + tab).classList.add('active');
-  if (btn) btn.classList.add('active');
-  if (tab === 'historial') actualizarHistorial();
-  if (tab === 'salida') contarPendientes();
-  // Stop streams when switching tabs
-  stopStream('entrada');
-  stopStream('salida');
-  entradaRunning = false;
-  salidaRunning = false;
-}
-async function enviarASheets(data) {
-  try {
-    await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body: JSON.stringify(data) });
-    return true;
-  } catch(e) { return false; }
+async function enviarSheets(data) {
+  try { await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(data)}); return true; }
+  catch(e) { return false; }
 }
 
-// ========== CAMERA ==========
-async function startStream(num) {
-  const id = num === 'entrada' ? 'video-entrada' : 'video-salida';
-  const vid = document.getElementById(id);
-  stopStream(num);
-  const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode:'user', width:{ideal:640}, height:{ideal:480} } });
-  if (num === 'entrada') entradaStream = s;
-  else salidaStream = s;
-  vid.srcObject = s;
-  return vid;
+// CAMERA
+async function startStream(id, videoId) {
+  stopStream(id);
+  const s = await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:480},height:{ideal:640}}});
+  if(id==='e') eStream=s; else sStream=s;
+  document.getElementById(videoId).srcObject = s;
 }
-function stopStream(num) {
-  const s = num === 'entrada' ? entradaStream : salidaStream;
-  if (s) s.getTracks().forEach(t => t.stop());
-  if (num === 'entrada') entradaStream = null;
-  else salidaStream = null;
+function stopStream(id) {
+  const s = id==='e' ? eStream : sStream;
+  if(s) s.getTracks().forEach(t=>t.stop());
+  if(id==='e') eStream=null; else sStream=null;
 }
-function captureFrame(videoId, canvasId) {
-  const vid = document.getElementById(videoId);
-  const can = document.getElementById(canvasId);
-  can.width = vid.videoWidth || 640;
-  can.height = vid.videoHeight || 480;
-  const ctx = can.getContext('2d');
-  ctx.save(); ctx.translate(can.width,0); ctx.scale(-1,1);
-  ctx.drawImage(vid,0,0); ctx.restore();
-  return can.toDataURL('image/jpeg', 0.8);
+function capturePhoto(videoId, canvasId) {
+  const v=document.getElementById(videoId), c=document.getElementById(canvasId);
+  c.width=v.videoWidth||480; c.height=v.videoHeight||640;
+  const ctx=c.getContext('2d');
+  ctx.save(); ctx.translate(c.width,0); ctx.scale(-1,1); ctx.drawImage(v,0,0); ctx.restore();
+  return c.toDataURL('image/jpeg',0.75);
 }
 
-// ========== FACE DETECTION ==========
-async function detectFace(videoEl) {
-  return await faceapi.detectSingleFace(videoEl, new faceapi.TinyFaceDetectorOptions({ inputSize:512, scoreThreshold:0.3 }))
-    .withFaceLandmarks(true).withFaceDescriptor();
+// FACE
+async function getDesc(src) {
+  const img = await new Promise((res,rej)=>{ const i=new Image(); i.crossOrigin='anonymous'; i.onload=()=>res(i); i.onerror=rej; i.src=src; });
+  let d = await faceapi.detectSingleFace(img,new faceapi.TinyFaceDetectorOptions({inputSize:416,scoreThreshold:0.3})).withFaceLandmarks(true).withFaceDescriptor();
+  if(!d) d = await faceapi.detectSingleFace(img,new faceapi.TinyFaceDetectorOptions({inputSize:224,scoreThreshold:0.2})).withFaceLandmarks(true).withFaceDescriptor();
+  return d ? Array.from(d.descriptor) : null;
 }
-async function getDescriptor(imgSrc) {
-  const img = await loadImage(imgSrc);
-  let det = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize:512, scoreThreshold:0.3 }))
-    .withFaceLandmarks(true).withFaceDescriptor();
-  if (!det) det = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize:320, scoreThreshold:0.2 }))
-    .withFaceLandmarks(true).withFaceDescriptor();
-  return det ? Array.from(det.descriptor) : null;
-}
-function loadImage(src) {
-  return new Promise((res,rej) => { const img = new Image(); img.crossOrigin='anonymous'; img.onload=()=>res(img); img.onerror=rej; img.src=src; });
-}
-function distance(d1, d2) {
-  let sum = 0;
-  for (let i=0; i<d1.length; i++) sum += (d1[i]-d2[i])**2;
-  return Math.sqrt(sum);
-}
-
-// ========== EAR (Eye Aspect Ratio) ==========
-function getEAR(landmarks) {
-  const pts = landmarks.positions;
-  // Left eye: 36-41, Right eye: 42-47
-  function ear(p1,p2,p3,p4,p5,p6) {
-    const a = Math.hypot(pts[p2].x-pts[p6].x, pts[p2].y-pts[p6].y);
-    const b = Math.hypot(pts[p3].x-pts[p5].x, pts[p3].y-pts[p5].y);
-    const c = Math.hypot(pts[p1].x-pts[p4].x, pts[p1].y-pts[p4].y);
-    return (a + b) / (2.0 * c);
-  }
-  const leftEAR = ear(36,37,38,39,40,41);
-  const rightEAR = ear(42,43,44,45,46,47);
-  return (leftEAR + rightEAR) / 2;
-}
-
-// ========== NOSE TIP X for head turn ==========
-function getNoseTipX(landmarks, faceBox) {
-  const pts = landmarks.positions;
-  const noseTip = pts[30]; // nose tip
-  const faceCenter = faceBox.x + faceBox.width / 2;
-  return (noseTip.x - faceCenter) / faceBox.width;
-}
-
-// ========== ANTI-FRAUD ==========
-function checkDuplicate(desc) {
-  const now = Date.now();
-  const recent = photoHistory.filter(p => (now - p.ts) < CLEANUP_DAYS * 86400000);
-  for (const p of recent) {
-    if (distance(desc, p.desc) < DUPLICATE_THRESHOLD) return { duplicate: true, nombre: p.nombre };
-  }
-  return { duplicate: false };
+function dist(a,b) { let s=0; for(let i=0;i<a.length;i++) s+=(a[i]-b[i])**2; return Math.sqrt(s); }
+function getNoseX(lm, box) { return (lm.positions[30].x - (box.x+box.width/2)) / box.width; }
+function checkDup(desc) {
+  const now=Date.now(), cut=now-CLEANUP_DAYS*86400000;
+  for(const p of photos.filter(x=>x.ts>cut)) { if(dist(desc,p.desc)<DUP_THR) return {dup:true,nombre:p.nombre}; }
+  return {dup:false};
 }
 function findWorker(desc) {
-  let best = null, bestDist = Infinity;
-  for (const w of workers) {
-    const d = distance(desc, w.descriptor);
-    if (d < bestDist) { bestDist = d; best = w; }
-  }
-  return (best && bestDist < MATCH_THRESHOLD) ? { found:true, worker:best, dist:bestDist } : { found:false };
+  let best=null, bd=Infinity;
+  for(const w of workers) { const d=dist(desc,w.descriptor); if(d<bd){bd=d;best=w;} }
+  return (best&&bd<MATCH_THR) ? {found:true,worker:best,dist:bd} : {found:false};
 }
 
-// ========== AREA ==========
-function selectArea(area) {
-  areaSeleccionada = area;
-  document.getElementById('btn-fabrica').className = 'tipo-btn' + (area==='fabrica' ? ' selected' : '');
-  document.getElementById('btn-obra').className = 'tipo-btn' + (area==='obra' ? ' selected' : '');
-  document.getElementById('btn-registrar').style.display = 'block';
-}
-
-// ========== VOICE ==========
-function escucharVoz(onResult) {
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRecognition) { onResult(null); return; }
-  const rec = new SpeechRecognition();
-  rec.lang = 'es-MX';
-  rec.interimResults = false;
-  rec.maxAlternatives = 3;
-  rec.onresult = (e) => {
-    const transcript = e.results[0][0].transcript.trim();
-    onResult(transcript);
-  };
-  rec.onerror = () => onResult(null);
-  rec.start();
-}
-
-function escucharNombre() {
-  const btn = document.getElementById('btn-voice-nombre');
-  const box = document.getElementById('voice-box-nombre');
-  const result = document.getElementById('voice-nombre-result');
-  btn.textContent = '🎤 Escuchando...';
-  btn.disabled = true;
-  box.classList.add('voice-listening');
-  escucharVoz((transcript) => {
-    btn.disabled = false;
-    btn.textContent = '🎤 Decir mi nombre';
-    box.classList.remove('voice-listening');
-    if (transcript) {
-      nombreVoz = transcript;
-      result.textContent = '"' + transcript + '"';
-      document.getElementById('nombre-input').value = transcript;
-    } else {
-      result.textContent = 'No se escuchó. Inténtalo de nuevo.';
-    }
-  });
-}
-
-function escucharNombreSalida() {
-  const btn = document.getElementById('btn-voice-salida');
-  const box = document.getElementById('voice-box-salida');
-  const result = document.getElementById('voice-salida-result');
-  btn.textContent = '🎤 Escuchando...';
-  btn.disabled = true;
-  box.classList.add('voice-listening');
-  escucharVoz((transcript) => {
-    btn.disabled = false;
-    btn.textContent = '🎤 Confirmar con voz';
-    box.classList.remove('voice-listening');
-    if (!transcript) {
-      result.textContent = 'No se escuchó. Inténtalo de nuevo.';
-      return;
-    }
-    result.textContent = '"' + transcript + '"';
-    // Check if voice matches worker name
-    const nombreWorker = salidaTrabajador ? salidaTrabajador.nombre.toLowerCase() : '';
-    const voiceNorm = transcript.toLowerCase();
-    const palabrasNombre = nombreWorker.split(' ');
-    const coincide = palabrasNombre.some(p => p.length > 2 && voiceNorm.includes(p));
-    if (coincide) {
-      document.getElementById('btn-autorizar').style.display = 'block';
-      mostrarResultadoSalida(true, salidaTrabajador);
-    } else {
-      result.textContent += ' — No coincide con ' + salidaTrabajador.nombre;
-      document.getElementById('btn-autorizar').style.display = 'block'; // Allow manual override
-      mostrarResultadoSalida(false, salidaTrabajador);
-    }
-  });
-}
-
-// ========== LIVENESS ENGINE ==========
-async function runLiveness(tipo) {
-  const isEntrada = tipo === 'entrada';
-  const videoId = isEntrada ? 'video-entrada' : 'video-salida';
-  const guideId = isEntrada ? 'guide-entrada' : 'guide-salida';
-  const msgId = isEntrada ? 'liveness-msg-entrada' : 'liveness-msg-salida';
-  const progressId = isEntrada ? 'liveness-progress-entrada' : 'liveness-progress-salida';
-  const stepFace = isEntrada ? 'step-face' : 'step-face-s';
-  const stepBlink = isEntrada ? 'step-blink' : 'step-blink-s';
-  const stepTurn = isEntrada ? 'step-turn' : 'step-turn-s';
-  const stepRecog = isEntrada ? 'step-recog' : 'step-recog-s';
-
+// LIVENESS ENGINE — head turn detection
+async function runLiveness(id) {
+  const isE = id==='e';
+  const videoId = isE?'vid-e':'vid-s';
+  const ovalId = isE?'oval-e':'oval-s';
+  const instrId = isE?'instr-e':'instr-s';
+  const stepsId = isE?'steps-e':'steps-s';
+  const s1 = isE?'se1':'ss1', s2=isE?'se2':'ss2', s3=isE?'se3':'ss3';
   const vid = document.getElementById(videoId);
-  const guide = document.getElementById(guideId);
-  const msg = document.getElementById(msgId);
-  const progress = document.getElementById(progressId);
-  progress.style.display = 'block';
+  const oval = document.getElementById(ovalId);
+  const instr = document.getElementById(instrId);
 
-  let blinkCount = 0;
-  let eyeWasClosed = false;
-  let headTurnDetected = false;
-  let faceDetected = false;
+  document.getElementById(stepsId).style.display='flex';
+  setStep(s1,'active'); setStep(s2,''); setStep(s3,'');
+
+  instr.textContent = 'Coloca tu cara en el óvalo';
+  oval.className = 'face-oval';
+
+  let faceFound = false;
   let baseNoseX = null;
-  let finalDescriptor = null;
-  let finalPhoto = null;
+  let turnDetected = false;
+  let frameCount = 0;
 
-  function setStep(stepId, state) {
-    const el = document.getElementById(stepId);
-    if (!el) return;
-    el.className = 'progress-step ' + state;
-    if (state === 'done') el.querySelector('.step-icon').textContent = '✅';
-    if (state === 'active') el.querySelector('.step-icon').textContent = el.querySelector('.step-icon').textContent;
-  }
+  const isRunning = ()=> isE ? eRunning : sRunning;
 
-  setStep(stepFace, 'active');
-  msg.textContent = 'Coloca tu cara en el óvalo';
-  guide.className = 'face-guide';
-
-  const running = isEntrada ? () => entradaRunning : () => salidaRunning;
-
-  while (running()) {
-    await new Promise(r => setTimeout(r, 100));
-    if (!running()) break;
+  while(isRunning()) {
+    await new Promise(r=>setTimeout(r,150)); // check every 150ms — less CPU
+    if(!isRunning()) break;
+    frameCount++;
 
     let det;
     try {
-      det = await faceapi.detectSingleFace(vid, new faceapi.TinyFaceDetectorOptions({ inputSize:320, scoreThreshold:0.3 }))
-        .withFaceLandmarks(true);
+      det = await faceapi.detectSingleFace(vid, new faceapi.TinyFaceDetectorOptions({inputSize:224,scoreThreshold:0.3})).withFaceLandmarks(true);
     } catch(e) { continue; }
 
-    if (!det) {
-      if (faceDetected) { msg.textContent = 'Vuelve al óvalo'; guide.className = 'face-guide red'; }
+    if(!det) {
+      oval.className = 'face-oval';
+      if(faceFound) instr.textContent = 'Vuelve al óvalo';
       continue;
     }
 
-    if (!faceDetected) {
-      faceDetected = true;
-      setStep(stepFace, 'done');
-      setStep(stepBlink, 'active');
-      guide.className = 'face-guide green';
+    if(!faceFound) {
+      faceFound = true;
+      setStep(s1,'done'); setStep(s2,'active');
+      oval.className = 'face-oval detected';
+      instr.textContent = '↔️ Gira la cabeza a la derecha';
+      baseNoseX = getNoseX(det.landmarks, det.detection.box);
     }
 
-    const lm = det.landmarks;
-    const box = det.detection.box;
-
-    // BLINK DETECTION
-    if (blinkCount < BLINKS_REQUIRED) {
-      const ear = getEAR(lm);
-      if (ear < BLINK_THRESHOLD) {
-        if (!eyeWasClosed) { eyeWasClosed = true; }
-      } else {
-        if (eyeWasClosed) {
-          blinkCount++;
-          eyeWasClosed = false;
-          msg.textContent = `Parpadeo ${blinkCount}/${BLINKS_REQUIRED} ✓`;
-          if (blinkCount >= BLINKS_REQUIRED) {
-            setStep(stepBlink, 'done');
-            setStep(stepTurn, 'active');
-            msg.textContent = 'Gira la cabeza a la derecha';
-            baseNoseX = getNoseTipX(lm, box);
-          }
-        }
-      }
-      continue;
-    }
-
-    // HEAD TURN DETECTION
-    if (!headTurnDetected) {
-      const currentNoseX = getNoseTipX(lm, box);
-      const shift = Math.abs(currentNoseX - (baseNoseX || 0));
-      if (shift > HEAD_TURN_THRESHOLD) {
-        headTurnDetected = true;
-        setStep(stepTurn, 'done');
-        setStep(stepRecog, 'active');
-        msg.textContent = 'Mirando al frente para identificarte...';
-        guide.className = 'face-guide';
-        await new Promise(r => setTimeout(r, 800));
-
-        // Capture photo and get descriptor
-        if (isEntrada) {
-          finalPhoto = captureFrame('video-entrada', 'canvas-entrada');
-        } else {
-          finalPhoto = captureFrame('video-salida', 'canvas-salida');
-        }
-        finalDescriptor = await getDescriptor(finalPhoto);
-
-        if (isEntrada) {
-          entradaDescriptor = finalDescriptor;
-          entradaFoto = finalPhoto;
-          entradaRunning = false;
-        } else {
-          salidaDescriptor = finalDescriptor;
-          salidaFoto = finalPhoto;
-          salidaRunning = false;
-        }
-
-        setStep(stepRecog, 'done');
-        stopStream(tipo);
-
-        if (isEntrada) procesarEntradaLiveness();
-        else procesarSalidaLiveness();
+    if(!turnDetected && baseNoseX !== null) {
+      const nx = getNoseX(det.landmarks, det.detection.box);
+      const shift = Math.abs(nx - baseNoseX);
+      if(shift > HEAD_TURN_THR) {
+        turnDetected = true;
+        setStep(s2,'done'); setStep(s3,'active');
+        oval.className = 'face-oval warning';
+        instr.textContent = '⏳ Mira al frente...';
+        await new Promise(r=>setTimeout(r,700));
+        if(!isRunning()) break;
+        instr.textContent = '📸 Capturando...';
+        const foto = capturePhoto(videoId, isE?'canvas-e':'canvas-s');
+        const desc = await getDesc(foto);
+        setStep(s3,'done');
+        oval.className = 'face-oval detected';
+        if(isE){ eDesc=desc; eFoto=foto; eRunning=false; }
+        else { sDesc=desc; sFoto=foto; sRunning=false; }
+        stopStream(id);
+        if(isE) onEntradaDone();
+        else onSalidaDone();
         return;
       }
-      continue;
     }
   }
 }
 
-// ========== ENTRADA ==========
+function setStep(id, state) {
+  const el = document.getElementById(id); if(!el) return;
+  el.className = 'step-item' + (state?' '+state:'');
+  const num = el.querySelector('.step-num');
+  if(state==='done') num.textContent='✓';
+  else if(state==='active') num.textContent=el.querySelector('.step-num').textContent||'?';
+}
+
+// ENTRADA
 async function iniciarEntrada() {
-  if (!modelsLoaded) return alert('IA aún cargando, espera...');
+  if(!modelsLoaded) return alert('IA cargando, espera...');
   try {
-    await startStream('entrada');
-    entradaRunning = true;
-    document.getElementById('btn-start-entrada').style.display = 'none';
-    document.getElementById('entrada-result').style.display = 'none';
-    document.getElementById('liveness-progress-entrada').style.display = 'none';
-    runLiveness('entrada');
-  } catch(e) {
-    alert('No se pudo acceder a la cámara. Verifica los permisos.');
-  }
+    await startStream('e','vid-e');
+    eRunning=true; eDesc=null; eFoto=null; eMatch=null; eArea=null;
+    document.getElementById('btn-ini-e').style.display='none';
+    document.getElementById('btn-retry-e').style.display='none';
+    document.getElementById('entrada-panel').style.display='none';
+    document.getElementById('steps-e').style.display='none';
+    runLiveness('e');
+  } catch(e) { alert('No se pudo acceder a la cámara. Verifica los permisos.'); }
 }
 
 function reiniciarEntrada() {
-  entradaRunning = false;
-  stopStream('entrada');
-  document.getElementById('btn-start-entrada').style.display = 'block';
-  document.getElementById('btn-retry-entrada').style.display = 'none';
-  document.getElementById('entrada-result').style.display = 'none';
-  document.getElementById('liveness-msg-entrada').textContent = 'Presiona "Iniciar" para comenzar';
-  document.getElementById('guide-entrada').className = 'face-guide';
-  document.getElementById('liveness-progress-entrada').style.display = 'none';
-  entradaDescriptor = null; entradaFoto = null; entradaReconocido = null;
-  areaSeleccionada = null; nombreVoz = null;
+  eRunning=false; stopStream('e');
+  document.getElementById('btn-ini-e').style.display='block';
+  document.getElementById('btn-retry-e').style.display='none';
+  document.getElementById('entrada-panel').style.display='none';
+  document.getElementById('instr-e').textContent='Presiona Iniciar';
+  document.getElementById('oval-e').className='face-oval';
+  document.getElementById('steps-e').style.display='none';
 }
 
-async function procesarEntradaLiveness() {
-  document.getElementById('btn-retry-entrada').style.display = 'block';
-  document.getElementById('entrada-result').style.display = 'block';
+async function onEntradaDone() {
+  document.getElementById('btn-retry-e').style.display='block';
+  document.getElementById('entrada-panel').style.display='block';
+  const box = document.getElementById('entrada-result-box');
 
-  if (!entradaDescriptor) {
-    document.getElementById('entrada-match-box').innerHTML = `
-      <div class="result-card danger">
-        <div class="result-icon">❌</div>
-        <div class="result-title">No se detectó rostro</div>
-        <div class="result-sub">Inténtalo con mejor iluminación</div>
-      </div>`;
+  if(!eDesc) {
+    box.innerHTML='<div class="result-box danger"><div class="result-icon">❌</div><div class="result-title">No se detectó rostro</div><div class="result-sub">Intenta con mejor luz</div></div>';
     return;
   }
 
-  // Anti-fraud
-  const dup = checkDuplicate(entradaDescriptor);
-  if (dup.duplicate) {
-    document.getElementById('entrada-match-box').innerHTML = `
-      <div class="fraud-alert">
-        <div class="fraud-icon">🚨</div>
-        <div class="fraud-title">FOTO REPETIDA DETECTADA</div>
-        <div class="fraud-sub">Esta imagen ya fue registrada anteriormente${dup.nombre ? ' (' + dup.nombre + ')' : ''}.</div>
-      </div>`;
+  const dup = checkDup(eDesc);
+  if(dup.dup) {
+    box.innerHTML=`<div class="fraud-box"><div style="font-size:36px">🚨</div><div style="font-weight:800;color:var(--danger);font-size:16px;margin:8px 0">FOTO REPETIDA</div><div style="font-size:13px;color:var(--text2)">Esta imagen ya fue registrada anteriormente${dup.nombre?' ('+dup.nombre+')':''}.</div></div>`;
     return;
   }
 
-  // Duplicate entry today
   const hoy = getFecha();
-
-  // Recognize
-  const match = findWorker(entradaDescriptor);
-  if (match.found) {
-    entradaReconocido = match.worker;
-    const sim = Math.round((1 - match.dist) * 100);
-
-    // Check duplicate entry
-    const yaEntro = registros.find(r => r.fecha === hoy && r.tipo === 'entrada' && r.nombre.toLowerCase() === match.worker.nombre.toLowerCase());
-    if (yaEntro) {
-      document.getElementById('entrada-match-box').innerHTML = `
-        <div class="result-card warning">
-          <div class="result-icon">⚠️</div>
-          <div class="result-title">${match.worker.nombre}</div>
-          <div class="result-sub">Ya tiene entrada registrada hoy a las ${yaEntro.hora}</div>
-        </div>`;
+  const match = findWorker(eDesc);
+  if(match.found) {
+    eMatch = match.worker;
+    const sim = Math.round((1-match.dist)*100);
+    const yaEntro = registros.find(r=>r.fecha===hoy&&r.tipo==='entrada'&&r.nombre.toLowerCase()===eMatch.nombre.toLowerCase());
+    if(yaEntro) {
+      box.innerHTML=`<div class="result-box warning"><div class="result-icon">⚠️</div><div class="result-title">${eMatch.nombre}</div><div class="result-sub">Ya tiene entrada hoy a las ${yaEntro.hora}</div></div>`;
       return;
     }
-
-    document.getElementById('entrada-match-box').innerHTML = `
-      <div class="worker-match">
-        ${match.worker.foto ? `<img src="${match.worker.foto}" alt="">` : '<div style="width:56px;height:56px;border-radius:10px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:24px">👤</div>'}
-        <div>
-          <div class="match-name">¡Hola, ${match.worker.nombre}!</div>
-          <div class="match-sub">Reconocido · ${sim}% similitud</div>
-          <div class="match-sub">Liveness ✅ · Parpadeo ✅ · Movimiento ✅</div>
-        </div>
-      </div>`;
-    document.getElementById('nombre-card').style.display = 'none';
-    document.getElementById('area-card').style.display = 'block';
-    document.getElementById('btn-registrar').style.display = 'none';
+    box.innerHTML=`<div class="worker-match">${eMatch.foto?`<img src="${eMatch.foto}" alt="">`:'<div style="width:52px;height:52px;border-radius:8px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:22px">👤</div>'}<div><div class="match-name">¡${eMatch.nombre}!</div><div class="match-sub">Reconocido · ${sim}% · Liveness ✅</div></div></div>`;
+    document.getElementById('nombre-card').style.display='none';
   } else {
-    entradaReconocido = null;
-    document.getElementById('entrada-match-box').innerHTML = `
-      <div class="result-card info">
-        <div class="result-icon">🆕</div>
-        <div class="result-title">Trabajador nuevo</div>
-        <div class="result-sub">Di tu nombre en voz alta o escríbelo</div>
-      </div>`;
-    document.getElementById('nombre-card').style.display = 'block';
-    document.getElementById('area-card').style.display = 'block';
-    document.getElementById('btn-registrar').style.display = 'none';
+    eMatch = null;
+    box.innerHTML='<div class="result-box info"><div class="result-icon">🆕</div><div class="result-title">Trabajador nuevo</div><div class="result-sub">Escribe el nombre a continuación</div></div>';
+    document.getElementById('nombre-card').style.display='block';
   }
+  document.getElementById('area-card').style.display='block';
+  document.getElementById('btn-reg').style.display='none';
+}
+
+function setArea(area) {
+  eArea=area;
+  document.getElementById('btn-fab').className='tipo-btn'+(area==='fabrica'?' selected':'');
+  document.getElementById('btn-obra').className='tipo-btn'+(area==='obra'?' selected':'');
+  document.getElementById('btn-reg').style.display='block';
 }
 
 async function guardarEntrada() {
-  let nombre;
-  if (entradaReconocido) {
-    nombre = entradaReconocido.nombre;
-  } else {
-    nombre = document.getElementById('nombre-input').value.trim();
-    if (!nombre) return showAlert('alert-entrada', 'Escribe o di tu nombre.', 'error');
-  }
-  if (!areaSeleccionada) return showAlert('alert-entrada', 'Selecciona Fábrica u Obra.', 'error');
-  if (!entradaDescriptor) return showAlert('alert-entrada', 'Error en verificación. Reintenta.', 'error');
+  let nombre = eMatch ? eMatch.nombre : document.getElementById('nombre-input').value.trim();
+  if(!nombre) return showAlert('alert-e','Escribe el nombre del trabajador.','error');
+  if(!eArea) return showAlert('alert-e','Selecciona Fábrica u Obra.','error');
+  if(!eDesc) return showAlert('alert-e','Error en verificación. Reintenta.','error');
 
-  const hoy = getFecha();
-  const yaEntro = registros.find(r => r.fecha === hoy && r.tipo === 'entrada' && r.nombre.toLowerCase() === nombre.toLowerCase());
-  if (yaEntro) return showAlert('alert-entrada', `⚠️ ${nombre} ya tiene entrada hoy a las ${yaEntro.hora}.`, 'warning');
+  const hoy=getFecha();
+  const yaEntro=registros.find(r=>r.fecha===hoy&&r.tipo==='entrada'&&r.nombre.toLowerCase()===nombre.toLowerCase());
+  if(yaEntro) return showAlert('alert-e',`⚠️ ${nombre} ya tiene entrada hoy a las ${yaEntro.hora}.`,'warning');
 
-  document.getElementById('loading-entrada').style.display = 'block';
-  document.getElementById('btn-registrar').style.display = 'none';
+  document.getElementById('load-e').style.display='block';
+  document.getElementById('btn-reg').style.display='none';
 
-  if (!entradaReconocido) {
-    workers.push({ nombre, descriptor: entradaDescriptor, foto: entradaFoto, createdAt: Date.now() });
-  }
-  photoHistory.push({ desc: entradaDescriptor, ts: Date.now(), nombre });
+  if(!eMatch) workers.push({nombre,descriptor:eDesc,foto:eFoto,createdAt:Date.now()});
+  photos.push({desc:eDesc,ts:Date.now(),nombre});
 
-  const reg = { nombre, tipo:'entrada', area: areaSeleccionada, foto: entradaFoto, descriptor: entradaDescriptor, timestamp: Date.now(), fecha: hoy, hora: getHoraCorta(), pago: null };
-  registros.push(reg);
-  saveAll();
+  const reg={nombre,tipo:'entrada',area:eArea,foto:eFoto,descriptor:eDesc,timestamp:Date.now(),fecha:hoy,hora:getHoraC(),pago:null};
+  registros.push(reg); saveAll();
+  await enviarSheets({nombre,tipo:'entrada',fecha:hoy,hora:reg.hora,area:eArea,pago:'',horaEntrada:'',foto:eFoto});
 
-  await enviarASheets({ nombre, tipo:'entrada', fecha: hoy, hora: reg.hora, area: areaSeleccionada, pago:'', horaEntrada:'', foto: entradaFoto });
-
-  document.getElementById('loading-entrada').style.display = 'none';
-  document.getElementById('entrada-match-box').innerHTML = `
-    <div class="result-card success">
-      <div class="result-icon">✅</div>
-      <div class="result-title">Entrada registrada</div>
-      <div class="result-sub">${nombre} · ${areaSeleccionada.charAt(0).toUpperCase()+areaSeleccionada.slice(1)}</div>
-      <div class="result-sub">Hora: ${reg.hora}</div>
-    </div>`;
-  document.getElementById('nombre-card').style.display = 'none';
-  document.getElementById('area-card').style.display = 'none';
-  document.getElementById('btn-retry-entrada').textContent = '↩ Registrar otro';
-  contarPendientes();
+  document.getElementById('load-e').style.display='none';
+  document.getElementById('entrada-result-box').innerHTML=`<div class="result-box success"><div class="result-icon">✅</div><div class="result-title">Entrada registrada</div><div class="result-sub">${nombre} · ${eArea.charAt(0).toUpperCase()+eArea.slice(1)} · ${reg.hora}</div></div>`;
+  document.getElementById('nombre-card').style.display='none';
+  document.getElementById('area-card').style.display='none';
+  document.getElementById('btn-retry-e').textContent='↩ Registrar otro';
+  refreshPendientes();
 }
 
-// ========== SALIDA ==========
+// SALIDA
 async function iniciarSalida() {
-  if (!modelsLoaded) return alert('IA aún cargando...');
+  if(!modelsLoaded) return alert('IA cargando...');
   try {
-    await startStream('salida');
-    salidaRunning = true;
-    document.getElementById('btn-start-salida').style.display = 'none';
-    document.getElementById('salida-result').style.display = 'none';
-    document.getElementById('liveness-progress-salida').style.display = 'none';
-    runLiveness('salida');
-  } catch(e) {
-    alert('No se pudo acceder a la cámara. Verifica los permisos.');
-  }
+    await startStream('s','vid-s');
+    sRunning=true; sDesc=null; sFoto=null; sTrabajador=null;
+    document.getElementById('btn-ini-s').style.display='none';
+    document.getElementById('btn-retry-s').style.display='none';
+    document.getElementById('salida-panel').style.display='none';
+    document.getElementById('steps-s').style.display='none';
+    runLiveness('s');
+  } catch(e) { alert('No se pudo acceder a la cámara. Verifica los permisos.'); }
 }
 
 function reiniciarSalida() {
-  salidaRunning = false;
-  stopStream('salida');
-  document.getElementById('btn-start-salida').style.display = 'block';
-  document.getElementById('btn-retry-salida').style.display = 'none';
-  document.getElementById('salida-result').style.display = 'none';
-  document.getElementById('liveness-msg-salida').textContent = 'Presiona "Iniciar" para comenzar';
-  document.getElementById('guide-salida').className = 'face-guide';
-  document.getElementById('liveness-progress-salida').style.display = 'none';
-  salidaDescriptor = null; salidaFoto = null; salidaTrabajador = null;
+  sRunning=false; stopStream('s');
+  document.getElementById('btn-ini-s').style.display='block';
+  document.getElementById('btn-retry-s').style.display='none';
+  document.getElementById('salida-panel').style.display='none';
+  document.getElementById('instr-s').textContent='Presiona Iniciar';
+  document.getElementById('oval-s').className='face-oval';
+  document.getElementById('steps-s').style.display='none';
 }
 
-async function procesarSalidaLiveness() {
-  document.getElementById('btn-retry-salida').style.display = 'block';
-  document.getElementById('salida-result').style.display = 'block';
+async function onSalidaDone() {
+  document.getElementById('btn-retry-s').style.display='block';
+  document.getElementById('salida-panel').style.display='block';
+  const box = document.getElementById('salida-result-box');
 
-  if (!salidaDescriptor) {
-    document.getElementById('salida-match-box').innerHTML = `
-      <div class="result-card danger">
-        <div class="result-icon">❌</div><div class="result-title">No se detectó rostro</div>
-        <div class="result-sub">Inténtalo con mejor iluminación</div>
-      </div>`;
+  if(!sDesc) {
+    box.innerHTML='<div class="result-box danger"><div class="result-icon">❌</div><div class="result-title">No se detectó rostro</div><div class="result-sub">Intenta con mejor luz</div></div>';
     return;
   }
 
-  // Anti-fraud
-  const dup = checkDuplicate(salidaDescriptor);
-  if (dup.duplicate) {
-    document.getElementById('fraud-box-salida').innerHTML = `
-      <div class="fraud-alert">
-        <div class="fraud-icon">🚨</div>
-        <div class="fraud-title">FOTO REPETIDA DETECTADA</div>
-        <div class="fraud-sub">Esta imagen ya fue usada anteriormente.</div>
-      </div>`;
-    document.getElementById('fraud-box-salida').style.display = 'block';
+  const dup=checkDup(sDesc);
+  if(dup.dup) {
+    box.innerHTML=`<div class="fraud-box"><div style="font-size:36px">🚨</div><div style="font-weight:800;color:var(--danger);font-size:16px;margin:8px 0">FOTO REPETIDA</div><div style="font-size:13px;color:var(--text2)">Esta imagen ya fue usada anteriormente.</div></div>`;
     return;
   }
 
-  // Find in today's pendientes
-  const hoy = getFecha();
-  const entradas = registros.filter(r => r.fecha === hoy && r.tipo === 'entrada');
-  const salidas = registros.filter(r => r.fecha === hoy && r.tipo === 'salida');
-  const nombresConSalida = salidas.map(s => s.nombre.toLowerCase());
-  const pendientes = entradas.filter(e => !nombresConSalida.includes(e.nombre.toLowerCase()));
+  const hoy=getFecha();
+  const entradas=registros.filter(r=>r.fecha===hoy&&r.tipo==='entrada');
+  const salidas=registros.filter(r=>r.fecha===hoy&&r.tipo==='salida');
+  const yasSalida=salidas.map(s=>s.nombre.toLowerCase());
+  const pendientes=entradas.filter(e=>!yasSalida.includes(e.nombre.toLowerCase()));
 
-  let bestMatch = null, bestDist = Infinity;
-  for (const p of pendientes) {
-    if (p.descriptor) {
-      const d = distance(salidaDescriptor, p.descriptor);
-      if (d < bestDist) { bestDist = d; bestMatch = p; }
-    }
+  let best=null, bd=Infinity;
+  for(const p of pendientes) {
+    if(p.descriptor){ const d=dist(sDesc,p.descriptor); if(d<bd){bd=d;best=p;} }
+  }
+  if(!best||bd>VERIFY_THR) {
+    const wm=findWorker(sDesc);
+    if(wm.found){ const pend=pendientes.find(p=>p.nombre.toLowerCase()===wm.worker.nombre.toLowerCase()); if(pend){best=pend;bd=wm.dist;} }
   }
 
-  // Also check workers DB
-  if (!bestMatch || bestDist > VERIFY_THRESHOLD) {
-    const wMatch = findWorker(salidaDescriptor);
-    if (wMatch.found) {
-      const pendiente = pendientes.find(p => p.nombre.toLowerCase() === wMatch.worker.nombre.toLowerCase());
-      if (pendiente) { bestMatch = pendiente; bestDist = wMatch.dist; }
-    }
-  }
-
-  if (!bestMatch) {
-    document.getElementById('salida-match-box').innerHTML = `
-      <div class="result-card danger">
-        <div class="result-icon">❌</div>
-        <div class="result-title">Sin coincidencia</div>
-        <div class="result-sub">No coincide con ninguna entrada registrada hoy</div>
-      </div>`;
+  if(!best) {
+    box.innerHTML='<div class="result-box danger"><div class="result-icon">❌</div><div class="result-title">Sin coincidencia</div><div class="result-sub">No coincide con ninguna entrada de hoy</div></div>';
     return;
   }
 
-  salidaTrabajador = bestMatch;
-  const sim = Math.round((1 - bestDist) * 100);
-  const autoApproved = bestDist < VERIFY_THRESHOLD;
-
-  document.getElementById('salida-match-box').innerHTML = `
-    <div class="worker-match" style="border-color:${autoApproved ? 'var(--success)' : 'var(--warning)'}">
-      ${bestMatch.foto ? `<img src="${bestMatch.foto}" alt="">` : '<div style="width:56px;height:56px;border-radius:10px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:24px">👤</div>'}
-      <div>
-        <div class="match-name" style="color:${autoApproved ? 'var(--success)' : 'var(--warning)'}">${bestMatch.nombre}</div>
-        <div class="match-sub">Similitud: ${sim}% · Liveness ✅</div>
-        <div class="match-sub">Entrada: ${bestMatch.hora}</div>
-      </div>
-    </div>`;
-
-  // Show voice confirmation
-  document.getElementById('voice-confirm-card').style.display = 'block';
-}
-
-function mostrarResultadoSalida(autorizado, trabajador) {
-  const horaSalida = getHoraCorta();
-  const card = document.getElementById('resultado-salida');
-  card.className = 'result-card ' + (autorizado ? 'success' : 'warning');
-  card.innerHTML = `
-    <div class="result-icon">${autorizado ? '✅' : '⚠️'}</div>
-    <div class="result-title">${autorizado ? 'Identidad confirmada' : 'Verificación manual'}</div>
-    <div class="result-sub">${trabajador.nombre}</div>
-    <div class="result-sub">Entrada: ${trabajador.hora} → Salida: ${horaSalida}</div>`;
-  card.style.display = 'block';
-  document.getElementById('btn-autorizar').style.display = 'block';
+  sTrabajador=best;
+  const sim=Math.round((1-bd)*100);
+  const autoOk=bd<VERIFY_THR;
+  box.innerHTML=`<div class="worker-match" style="border-color:${autoOk?'var(--success)':'var(--warning)'}">${best.foto?`<img src="${best.foto}" alt="">`:'<div style="width:52px;height:52px;border-radius:8px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:22px">👤</div>'}<div><div class="match-name" style="color:${autoOk?'var(--success)':'var(--warning)'}">${best.nombre}</div><div class="match-sub">Similitud: ${sim}% · Liveness ✅</div><div class="match-sub">Entrada: ${best.hora}</div></div></div>`;
+  document.getElementById('btn-auth').style.display='block';
 }
 
 async function autorizarPago() {
-  if (!salidaTrabajador) return;
+  if(!sTrabajador) return;
+  const hoy=getFecha();
+  const yaSalio=registros.find(r=>r.fecha===hoy&&r.tipo==='salida'&&r.nombre.toLowerCase()===sTrabajador.nombre.toLowerCase());
+  if(yaSalio){ showAlert('alert-s',`⚠️ ${sTrabajador.nombre} ya tiene salida hoy.`,'warning'); document.getElementById('btn-auth').style.display='none'; return; }
 
-  const hoy = getFecha();
-  const yaSalio = registros.find(r => r.fecha === hoy && r.tipo === 'salida' && r.nombre.toLowerCase() === salidaTrabajador.nombre.toLowerCase());
-  if (yaSalio) {
-    showAlert('alert-salida', `⚠️ ${salidaTrabajador.nombre} ya tiene salida registrada hoy.`, 'warning');
-    document.getElementById('btn-autorizar').style.display = 'none';
-    return;
-  }
-
-  const btn = document.getElementById('btn-autorizar');
-  btn.disabled = true; btn.textContent = '⏳ Procesando...';
-
-  const horaSalida = getHoraCorta();
-  if (salidaDescriptor) photoHistory.push({ desc: salidaDescriptor, ts: Date.now(), nombre: salidaTrabajador.nombre });
-
-  const reg = { nombre: salidaTrabajador.nombre, tipo:'salida', foto: salidaFoto, timestamp: Date.now(), fecha: hoy, hora: horaSalida, pago:'autorizado', horaEntrada: salidaTrabajador.hora };
-  registros.push(reg);
-  saveAll();
-
-  await enviarASheets({ nombre: reg.nombre, tipo:'salida', fecha: hoy, hora: horaSalida, pago:'autorizado', horaEntrada: salidaTrabajador.hora, foto: salidaFoto });
-
-  btn.style.display = 'none'; btn.disabled = false; btn.textContent = '💰 Autorizar pago';
-  document.getElementById('resultado-salida').innerHTML = `
-    <div style="text-align:center;padding:20px">
-      <div style="font-size:44px">💰</div>
-      <div style="font-size:20px;font-weight:800;color:var(--success);margin-top:10px">Pago autorizado</div>
-      <div style="font-size:13px;color:var(--text2);margin-top:4px">${salidaTrabajador.nombre} · ${horaSalida}</div>
-    </div>`;
-  document.getElementById('voice-confirm-card').style.display = 'none';
-  salidaTrabajador = null;
-  contarPendientes();
+  const btn=document.getElementById('btn-auth'); btn.disabled=true; btn.textContent='⏳ Procesando...';
+  const horaSalida=getHoraC();
+  if(sDesc) photos.push({desc:sDesc,ts:Date.now(),nombre:sTrabajador.nombre});
+  const reg={nombre:sTrabajador.nombre,tipo:'salida',foto:sFoto,timestamp:Date.now(),fecha:hoy,hora:horaSalida,pago:'autorizado',horaEntrada:sTrabajador.hora};
+  registros.push(reg); saveAll();
+  await enviarSheets({nombre:reg.nombre,tipo:'salida',fecha:hoy,hora:horaSalida,pago:'autorizado',horaEntrada:sTrabajador.hora,foto:sFoto});
+  btn.style.display='none'; btn.disabled=false; btn.textContent='💰 Autorizar pago';
+  document.getElementById('salida-result-box').innerHTML=`<div class="result-box success"><div class="result-icon">💰</div><div class="result-title">Pago autorizado</div><div class="result-sub">${sTrabajador.nombre} · ${horaSalida}</div></div>`;
+  sTrabajador=null; refreshPendientes();
 }
 
-// ========== PENDIENTES LIST ==========
-function contarPendientes() {
-  const hoy = getFecha();
-  const entradas = registros.filter(r => r.fecha === hoy && r.tipo === 'entrada');
-  const salidas = registros.filter(r => r.fecha === hoy && r.tipo === 'salida');
-  const nombresConSalida = salidas.map(s => s.nombre.toLowerCase());
-  const pendientes = entradas.filter(e => !nombresConSalida.includes(e.nombre.toLowerCase()));
-  const el = document.getElementById('count-pendientes');
-  if (el) el.textContent = pendientes.length;
-
-  const lista = document.getElementById('lista-entradas-hoy');
-  if (!lista) return;
-  if (!entradas.length) {
-    lista.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div>Sin entradas hoy</div></div>';
-    return;
-  }
-  lista.innerHTML = entradas.map(r => {
-    const yaSalio = nombresConSalida.includes(r.nombre.toLowerCase());
-    return `<div class="registro-item" style="display:flex;align-items:center;gap:12px">
-      ${r.foto ? `<img class="registro-foto" src="${r.foto}" alt="">` : '<div style="width:44px;height:44px;border-radius:8px;background:var(--surface2);display:flex;align-items:center;justify-content:center">👤</div>'}
-      <div style="flex:1">
-        <div class="registro-nombre">${r.nombre}</div>
-        <div class="registro-meta">Entrada: ${r.hora} · ${r.area ? r.area.charAt(0).toUpperCase()+r.area.slice(1) : ''}</div>
-      </div>
-      <span class="badge ${yaSalio ? 'badge-autorizado' : 'badge-entrada'}">${yaSalio ? '✅ PAGADO' : 'PENDIENTE'}</span>
-    </div>`;
+// PENDIENTES
+function refreshPendientes() {
+  const hoy=getFecha();
+  const ents=registros.filter(r=>r.fecha===hoy&&r.tipo==='entrada');
+  const sals=registros.filter(r=>r.fecha===hoy&&r.tipo==='salida').map(s=>s.nombre.toLowerCase());
+  const pend=ents.filter(e=>!sals.includes(e.nombre.toLowerCase()));
+  const el=document.getElementById('count-pend'); if(el) el.textContent=pend.length;
+  const lista=document.getElementById('lista-hoy'); if(!lista) return;
+  if(!ents.length){ lista.innerHTML='<div class="empty-state"><div class="empty-icon">📋</div>Sin entradas hoy</div>'; return; }
+  lista.innerHTML=ents.map(r=>{
+    const pagado=sals.includes(r.nombre.toLowerCase());
+    return `<div class="reg-item"><div class="reg-row">${r.foto?`<img class="reg-foto" src="${r.foto}" alt="">`:'<div style="width:44px;height:44px;border-radius:8px;background:var(--surface2);display:flex;align-items:center;justify-content:center">👤</div>'}<div style="flex:1"><div class="reg-name">${r.nombre}</div><div class="reg-meta">Entrada: ${r.hora} · ${r.area?r.area.charAt(0).toUpperCase()+r.area.slice(1):''}</div></div><span class="badge ${pagado?'badge-autorizado':'badge-entrada'}">${pagado?'✅ PAGADO':'PENDIENTE'}</span></div></div>`;
   }).join('');
 }
 
-// ========== HISTORIAL ==========
-function actualizarHistorial() {
-  const hoy = getFecha();
-  const hoyR = registros.filter(r => r.fecha === hoy);
-  document.getElementById('stat-entradas').textContent = hoyR.filter(r => r.tipo === 'entrada').length;
-  document.getElementById('stat-salidas').textContent = hoyR.filter(r => r.tipo === 'salida').length;
-  document.getElementById('stat-autorizados').textContent = hoyR.filter(r => r.pago === 'autorizado').length;
-  document.getElementById('stat-conocidos').textContent = workers.length;
-
-  const lista = document.getElementById('lista-registros');
-  const entradas = hoyR.filter(r => r.tipo === 'entrada');
-  if (!entradas.length) {
-    lista.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div>Sin registros hoy</div></div>';
-    return;
-  }
-  lista.innerHTML = [...entradas].reverse().map(r => {
-    const salida = hoyR.find(s => s.tipo === 'salida' && s.nombre.toLowerCase() === r.nombre.toLowerCase());
-    return `<div class="registro-item">
-      <div style="display:flex;align-items:center;gap:12px">
-        ${r.foto ? `<img class="registro-foto" src="${r.foto}" alt="">` : '<div style="width:44px;height:44px;border-radius:8px;background:var(--surface2);display:flex;align-items:center;justify-content:center">👤</div>'}
-        <div>
-          <div class="registro-nombre">${r.nombre}</div>
-          <div class="registro-meta">${r.area ? '📍 '+r.area.charAt(0).toUpperCase()+r.area.slice(1) : ''}</div>
-        </div>
-      </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;padding-left:56px">
-        <span class="badge badge-entrada">🌅 Entrada ${r.hora}</span>
-        ${salida
-          ? `<span class="badge ${salida.pago==='autorizado'?'badge-autorizado':'badge-rechazado'}">🌆 Salida ${salida.hora} · ${salida.pago==='autorizado'?'✅ Autorizado':'❌ Rechazado'}</span>`
-          : `<span class="badge" style="background:rgba(196,144,48,0.15);color:#8A6A10">⏳ Sin salida</span>`}
-      </div>
-    </div>`;
+// HISTORIAL
+function updateHistorial() {
+  const hoy=getFecha(), hoyR=registros.filter(r=>r.fecha===hoy);
+  document.getElementById('st-e').textContent=hoyR.filter(r=>r.tipo==='entrada').length;
+  document.getElementById('st-s').textContent=hoyR.filter(r=>r.tipo==='salida').length;
+  document.getElementById('st-a').textContent=hoyR.filter(r=>r.pago==='autorizado').length;
+  document.getElementById('st-w').textContent=workers.length;
+  const lista=document.getElementById('lista-hist');
+  const ents=hoyR.filter(r=>r.tipo==='entrada');
+  if(!ents.length){ lista.innerHTML='<div class="empty-state"><div class="empty-icon">📋</div>Sin registros hoy</div>'; return; }
+  lista.innerHTML=[...ents].reverse().map(r=>{
+    const sal=hoyR.find(s=>s.tipo==='salida'&&s.nombre.toLowerCase()===r.nombre.toLowerCase());
+    return `<div class="reg-item"><div class="reg-row">${r.foto?`<img class="reg-foto" src="${r.foto}" alt="">`:'<div style="width:44px;height:44px;border-radius:8px;background:var(--surface2);display:flex;align-items:center;justify-content:center">👤</div>'}<div style="flex:1"><div class="reg-name">${r.nombre}</div><div class="reg-meta">${r.area?'📍 '+r.area.charAt(0).toUpperCase()+r.area.slice(1):''}</div></div></div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;padding-left:56px"><span class="badge badge-entrada">🌅 Entrada ${r.hora}</span>${sal?`<span class="badge ${sal.pago==='autorizado'?'badge-autorizado':'badge-rechazado'}">🌆 Salida ${sal.hora} · ${sal.pago==='autorizado'?'✅ Autorizado':'❌ Rechazado'}</span>`:'<span class="badge badge-pending">⏳ Sin salida</span>'}</div></div>`;
   }).join('');
 }
 
-// ========== CLEANUP ==========
-function autoCleanup() {
-  const cutoff = Date.now() - (CLEANUP_DAYS * 86400000);
-  photoHistory = photoHistory.filter(p => p.ts > cutoff);
-  localStorage.setItem(DB_PHOTOS, JSON.stringify(photoHistory));
+// CLEANUP
+function autoCleanup() { const cut=Date.now()-CLEANUP_DAYS*86400000; photos=photos.filter(p=>p.ts>cut); localStorage.setItem(DB_P,JSON.stringify(photos)); }
+function limpiarFotos() { const cut=Date.now()-CLEANUP_DAYS*86400000; const b=photos.length; photos=photos.filter(p=>p.ts>cut); localStorage.setItem(DB_P,JSON.stringify(photos)); alert(`🧹 ${b-photos.length} fotos eliminadas.`); }
+function resetApp() {
+  const c=prompt('Clave de administrador:'); if(!c) return;
+  if(c!=='123456'){alert('Clave incorrecta.');return;}
+  if(!confirm('¿Borrar toda la memoria en este dispositivo?')) return;
+  localStorage.clear(); registros=[]; workers=[]; photos=[];
+  alert('✅ App reseteada.'); updateHistorial();
 }
-function limpiarFotosAntiguas() {
-  const cutoff = Date.now() - (CLEANUP_DAYS * 86400000);
-  const before = photoHistory.length;
-  photoHistory = photoHistory.filter(p => p.ts > cutoff);
-  localStorage.setItem(DB_PHOTOS, JSON.stringify(photoHistory));
-  alert(`🧹 Limpieza: ${before - photoHistory.length} fotos eliminadas.`);
-}
-function resetConClave() {
-  const clave = prompt('Ingresa la clave de administrador:');
-  if (clave === null) return;
-  if (clave !== '123456') { alert('Clave incorrecta.'); return; }
-  if (!confirm('¿Borrar toda la memoria de esta app en este dispositivo?')) return;
-  localStorage.clear();
-  registros = []; workers = []; photoHistory = [];
-  alert('✅ App reseteada.');
-  actualizarHistorial();
-}
-
-// ========== EXPORT ==========
-function exportarCSV() {
-  const hoy = getFecha();
-  const datos = registros.filter(r => r.fecha === hoy);
-  if (!datos.length) { alert('No hay registros hoy.'); return; }
-  const rows = [['Nombre','Tipo','Fecha','Hora','Área','Pago','Hora Entrada'], ...datos.map(r => [r.nombre, r.tipo, r.fecha, r.hora, r.area||'', r.pago||'', r.horaEntrada||''])];
-  const csv = rows.map(r => r.join(',')).join('\n');
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8;'}));
-  a.download = `trabajadores_${hoy.replace(/\//g,'-')}.csv`;
-  a.click();
+function exportCSV() {
+  const hoy=getFecha(), datos=registros.filter(r=>r.fecha===hoy);
+  if(!datos.length){alert('Sin registros hoy.');return;}
+  const rows=[['Nombre','Tipo','Fecha','Hora','Área','Pago','Hora Entrada'],...datos.map(r=>[r.nombre,r.tipo,r.fecha,r.hora,r.area||'',r.pago||'',r.horaEntrada||''])];
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([rows.map(r=>r.join(',')).join('\n')],{type:'text/csv'})); a.download=`umma_${hoy.replace(/\//g,'-')}.csv`; a.click();
 }
 </script>
 </body>
