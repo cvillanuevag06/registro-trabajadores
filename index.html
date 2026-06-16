@@ -318,7 +318,7 @@ canvas { display: none; }
 </div>
 
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwR4Zm9rKZiMzXYVVloQlsONpbt_y9kMvnhy0mb4Vam87lNKw7Y_zqE7Syk_16nTw/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxZBoAFztGYF3HFiTGsrbZfAISMebWr7q3FJZSqw9hDkEqS-zcnyzo9ve9Prt75nLA/exec';
 const ADMIN_PASS = '123456';
 const DUP=0.12, MATCH=0.55, VERIFY=0.40, CLEANUP=14;
 const DR='u_reg', DW='u_workers', DP='u_photos', DS='u_sups', DC='u_cfg';
@@ -359,7 +359,8 @@ async function loadModels(){
     document.getElementById('dot').className='dot dot-ok';
     document.getElementById('init-scr').style.display='none';
     document.getElementById('tab-entrada').classList.add('on');
-    refreshPend();
+    // Sync from Sheets on load
+    syncFromSheets().then(()=>{refreshPend();}).catch(()=>{refreshPend();});
   }catch(e){
     document.getElementById('init-msg').textContent='Error cargando IA. Recarga la página.';
   }
@@ -376,6 +377,72 @@ const saveAll=()=>{
   localStorage.setItem(DS,JSON.stringify(sups));
   localStorage.setItem(DC,JSON.stringify(cfg));
 };
+// ===== SYNC CON SHEETS =====
+async function syncFromSheets() {
+  try {
+    // Sync trabajadores via POST
+    const rW = await fetch(SCRIPT_URL, {
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'text/plain'},
+      body: JSON.stringify({accion:'leer_trabajadores'})
+    });
+    // no-cors doesn't return readable response, so we use a workaround via iframe/jsonp
+    // Instead, load via script tag trick
+  } catch(e) {}
+
+  // Use JSONP-style via script injection for GET requests
+  await syncViaScript('trabajadores', (data) => {
+    if(data && data.length > 0) {
+      data.forEach(w => {
+        const exists = workers.find(x => x.nombre.toLowerCase() === w.nombre.toLowerCase());
+        if(!exists) workers.push({nombre:w.nombre, descriptor:w.descriptor, foto:w.foto, createdAt:Date.now()});
+      });
+      localStorage.setItem(DW, JSON.stringify(workers));
+    }
+  });
+
+  await syncViaScript('registros_hoy', (data) => {
+    if(data && data.length > 0) {
+      const hoy = getDate();
+      regs = regs.filter(r => r.fecha !== hoy);
+      data.forEach(r => {
+        if(r.horaEntrada) {
+          regs.push({nombre:r.nombre,tipo:'entrada',fecha:hoy,hora:r.horaEntrada,area:r.area||null,sueldo:r.sueldo?parseInt(r.sueldo.replace('$','')):null,supervisor:r.supervisor||null,foto:r.fotoEntrada||null,descriptor:null,pago:null,timestamp:Date.now()});
+        }
+        if(r.horaSalida&&r.horaSalida!=='') {
+          regs.push({nombre:r.nombre,tipo:'salida',fecha:hoy,hora:r.horaSalida,pago:r.pago==='Autorizado'?'autorizado':'rechazado',horaEntrada:r.horaEntrada,foto:r.fotoSalida||null,timestamp:Date.now()});
+        }
+      });
+      localStorage.setItem(DR, JSON.stringify(regs));
+    }
+  });
+}
+
+function syncViaScript(accion, callback) {
+  return new Promise((resolve) => {
+    const cbName = '_cb_' + accion + '_' + Date.now();
+    const url = SCRIPT_URL + '?accion=' + accion + '&callback=' + cbName;
+    window[cbName] = (data) => {
+      try { callback(data.data); } catch(e) {}
+      delete window[cbName];
+      if(script.parentNode) script.parentNode.removeChild(script);
+      resolve();
+    };
+    const script = document.createElement('script');
+    script.src = url;
+    script.onerror = () => { delete window[cbName]; resolve(); };
+    setTimeout(() => { delete window[cbName]; resolve(); }, 8000);
+    document.head.appendChild(script);
+  });
+}
+
+async function sendWorkerToSheets(nombre, descriptor, foto) {
+  try {
+    await fetch(SCRIPT_URL, {method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'},
+      body: JSON.stringify({accion:'guardar_trabajador', nombre, descriptor, foto})});
+  } catch(e) {}
+}
+
 function showAl(id,msg,t='e'){
   const el=document.getElementById(id);if(!el)return;
   el.innerHTML=msg;el.style.display='block';el.className='al al-'+t;
@@ -387,8 +454,8 @@ function goTab(tab,btn){
   document.getElementById('tab-'+tab).classList.add('on');
   if(btn)btn.classList.add('on');
   stopAll();
-  if(tab==='historial')updateHist();
-  if(tab==='salida')refreshPend();
+  if(tab==='historial'){syncFromSheets().then(()=>updateHist()).catch(()=>updateHist());}
+  if(tab==='salida'){syncFromSheets().then(()=>refreshPend()).catch(()=>refreshPend());}
   if(tab==='supervisor')renderSupSel();
 }
 function goTabAdmin(btn){
@@ -607,7 +674,10 @@ async function saveEntrada(){
   if(ya)return showAl('al-e',`⚠️ ${nombre} ya tiene entrada hoy.`,'w');
   document.getElementById('load-e').style.display='block';
   document.getElementById('btn-save-e').style.display='none';
-  if(!eMatch)workers.push({nombre,descriptor:eDesc,foto:eFoto,createdAt:Date.now()});
+  if(!eMatch){
+    workers.push({nombre,descriptor:eDesc,foto:eFoto,createdAt:Date.now()});
+    sendWorkerToSheets(nombre,eDesc,eFoto);
+  }
   photos.push({desc:eDesc,ts:Date.now(),nombre});
   const reg={nombre,tipo:'entrada',area:null,sueldo:null,foto:eFoto,descriptor:eDesc,timestamp:Date.now(),fecha:hoy,hora:getHoraC(),pago:null,supervisor:null};
   regs.push(reg);saveAll();
