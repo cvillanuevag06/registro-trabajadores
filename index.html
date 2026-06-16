@@ -20,14 +20,15 @@
     messagingSenderId: "367041994965",
     appId: "1:367041994965:web:cb85d86208e729e75c825c"
   };
-  const ALLOWED = ['cvillanuevag06@gmail.com'];
+  const ALLOWED = [];
+  const checkAllowed = (email) => ALLOWED.length === 0 || ALLOWED.includes(email.toLowerCase());
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const provider = new GoogleAuthProvider();
   window.loginGoogle = async () => {
     try {
       const r = await signInWithPopup(auth, provider);
-      if (!ALLOWED.includes(r.user.email.toLowerCase())) {
+      if (!checkAllowed(r.user.email)) {
         await signOut(auth);
         document.getElementById('login-err').textContent = '⛔ Correo no autorizado.';
         document.getElementById('login-err').style.display = 'block';
@@ -39,7 +40,7 @@
   };
   window.logoutGoogle = async () => { if(confirm('¿Cerrar sesión?')) await signOut(auth); };
   onAuthStateChanged(auth, user => {
-    if (user && ALLOWED.includes(user.email.toLowerCase())) {
+    if (user && checkAllowed(user.email)) {
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('app').style.display = 'block';
       document.getElementById('user-lbl').textContent = user.email;
