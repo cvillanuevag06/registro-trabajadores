@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Umma · Control de Trabajadores</title>
+<!-- face-api.js solo para reconocimiento (se carga después) -->
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<!-- MediaPipe para cámara + liveness en tiempo real -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
+<!-- Login removido temporalmente -->
+<style>
+:root {
+  --bg: #C8C4BE; --surface: #fff; --surface2: #E4E0DB;
+  --accent: #6B5240; --dark: #2A1F15;
+  --text: #2A1F15; --text2: #8C7B6E;
+  --green: #4A7A3A; --red: #B04030; --warn: #C49030;
+  --r: 14px; --rs: 8px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; max-width: 480px; margin: 0 auto; }
+
+/* LOGIN */
+#login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 40px 24px; text-align: center; }
+.login-logo { width: 72px; height: 72px; border-radius: 18px; background: var(--dark); display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 800; color: white; margin: 0 auto 16px; }
+.login-title { font-size: 24px; font-weight: 800; margin-bottom: 4px; }
+.login-sub { font-size: 14px; color: var(--text2); margin-bottom: 28px; }
+.btn-google { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 14px; background: white; border: 1.5px solid rgba(0,0,0,0.12); border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+.login-err { margin-top: 14px; padding: 10px 14px; background: rgba(176,64,48,0.1); border: 1px solid var(--red); border-radius: 8px; font-size: 13px; color: #9E3A2A; display: none; }
+.login-note { margin-top: 16px; font-size: 12px; color: var(--text2); }
+
+/* APP */
+#app { display: none; padding-bottom: 80px; }
+.header { background: var(--dark); padding: 18px 18px 14px; position: sticky; top: 0; z-index: 100; }
+.h-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-icon { width: 36px; height: 36px; border-radius: 9px; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; color: white; }
+.logo-text { font-size: 16px; font-weight: 700; color: #F2EDE8; }
+.logo-sub { font-size: 11px; color: #A89888; margin-top: 1px; }
+.h-right { display: flex; align-items: center; gap: 8px; }
+.user-lbl { font-size: 11px; color: #A89888; max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.btn-out { background: rgba(255,255,255,0.1); border: none; color: #A89888; font-size: 12px; padding: 4px 8px; border-radius: 6px; cursor: pointer; }
+.dot { width: 8px; height: 8px; border-radius: 50%; }
+.dot-load { background: var(--warn); box-shadow: 0 0 6px var(--warn); }
+.dot-ok { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.tabs { display: flex; gap: 4px; background: #1a1208; border-radius: 10px; padding: 4px; }
+.tab { flex: 1; padding: 8px; border-radius: 7px; border: none; font-size: 13px; font-weight: 600; cursor: pointer; background: transparent; color: #A89888; transition: all 0.2s; }
+.tab.on { background: var(--accent); color: white; }
+.content { padding: 18px; }
+.sec { display: none; }
+.sec.on { display: block; }
+.card { background: var(--surface); border-radius: var(--r); padding: 16px; margin-bottom: 14px; border: 1px solid rgba(0,0,0,0.07); box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.card-t { font-size: 12px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px; }
+input[type=text] { width: 100%; padding: 11px 13px; background: var(--surface2); border: 1px solid rgba(0,0,0,0.1); border-radius: var(--rs); color: var(--text); font-size: 15px; outline: none; }
+input[type=text]:focus { border-color: var(--accent); }
+input[type=text]::placeholder { color: rgba(0,0,0,0.3); }
+
+/* CAMERA */
+.cam-wrap { position: relative; width: 100%; aspect-ratio: 3/4; border-radius: var(--r); overflow: hidden; background: #111; }
+.cam-wrap video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+.cam-wrap canvas.mp-canvas { position: absolute; inset: 0; width: 100%; height: 100%; transform: scaleX(-1); pointer-events: none; opacity: 0; }
+.cam-over { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; pointer-events: none; }
+.oval { width: 54%; aspect-ratio: 3/4; border: 3px solid rgba(255,255,255,0.45); border-radius: 50%; transition: all 0.3s; }
+.oval.det { border-color: var(--green); box-shadow: 0 0 18px rgba(74,122,58,0.55); }
+.oval.mov { border-color: var(--warn); box-shadow: 0 0 18px rgba(196,144,48,0.55); }
+.cam-msg { background: rgba(0,0,0,0.72); color: white; padding: 9px 16px; border-radius: 18px; font-size: 14px; font-weight: 700; text-align: center; max-width: 84%; }
+canvas.hidden { display: none; }
+
+/* STEPS */
+.steps { margin-top: 10px; display: none; flex-direction: column; gap: 7px; }
+.step { display: flex; align-items: center; gap: 9px; font-size: 13px; color: var(--text2); }
+.step.on { color: var(--text); font-weight: 700; }
+.step.ok { color: var(--green); font-weight: 600; }
+.snum { width: 22px; height: 22px; border-radius: 50%; background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+.step.on .snum { background: var(--accent); color: white; }
+.step.ok .snum { background: var(--green); color: white; }
+
+/* BTN */
+.btn { width: 100%; padding: 14px; border-radius: var(--rs); border: none; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+.btn-p { background: var(--accent); color: white; }
+.btn-s { background: transparent; color: var(--text2); border: 1px solid rgba(0,0,0,0.1); }
+.btn-g { background: var(--green); color: white; }
+.btn-r { background: var(--red); color: white; }
+.area-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.area-btn { padding: 13px; border-radius: var(--rs); border: 1.5px solid rgba(0,0,0,0.1); background: transparent; color: var(--text2); font-size: 14px; font-weight: 600; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; transition: all 0.2s; }
+.area-btn.on { border-color: var(--accent); color: var(--accent); background: rgba(107,82,64,0.08); }
+
+/* RESULT */
+.rbox { border-radius: var(--r); padding: 18px; text-align: center; margin-bottom: 12px; }
+.rbox.ok { background: rgba(74,122,58,0.1); border: 1.5px solid var(--green); }
+.rbox.err { background: rgba(176,64,48,0.1); border: 1.5px solid var(--red); }
+.rbox.info { background: rgba(107,82,64,0.07); border: 1.5px solid var(--accent); }
+.rbox.warn { background: rgba(196,144,48,0.1); border: 1.5px solid var(--warn); }
+.rico { font-size: 38px; margin-bottom: 7px; }
+.rtit { font-size: 19px; font-weight: 800; margin-bottom: 4px; }
+.rsub { font-size: 13px; color: var(--text2); }
+.wmatch { display: flex; align-items: center; gap: 12px; padding: 13px; background: rgba(107,82,64,0.07); border: 1.5px solid var(--accent); border-radius: var(--r); margin-bottom: 12px; }
+.wmatch img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; }
+.wname { font-size: 16px; font-weight: 700; color: var(--accent); }
+.wsub { font-size: 12px; color: var(--text2); margin-top: 2px; }
+.fraud { padding: 14px; background: rgba(176,64,48,0.1); border: 1.5px solid var(--red); border-radius: var(--r); text-align: center; margin-bottom: 12px; }
+
+/* HISTORIAL */
+.sgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.scard { background: var(--surface); border-radius: var(--rs); padding: 13px; border: 1px solid rgba(0,0,0,0.07); text-align: center; }
+.snum { font-size: 26px; font-weight: 800; margin-bottom: 3px; }
+.slbl { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.6px; }
+.ri { padding: 11px 0; border-bottom: 1px solid rgba(0,0,0,0.05); }
+.ri:last-child { border: none; }
+.rfoto { width: 42px; height: 42px; border-radius: 7px; object-fit: cover; flex-shrink: 0; }
+.rname { font-size: 14px; font-weight: 600; }
+.rmeta { font-size: 12px; color: var(--text2); }
+.badge { padding: 3px 9px; border-radius: 18px; font-size: 11px; font-weight: 700; }
+.b-e { background: rgba(74,122,58,0.13); color: var(--green); }
+.b-ok { background: rgba(74,122,58,0.13); color: var(--green); }
+.b-no { background: rgba(176,64,48,0.13); color: var(--red); }
+.b-p { background: rgba(196,144,48,0.13); color: #8A6A10; }
+
+/* MISC */
+.load { display: none; text-align: center; padding: 14px; color: var(--text2); font-size: 13px; }
+.spin { width: 26px; height: 26px; border: 3px solid rgba(0,0,0,0.08); border-top-color: var(--accent); border-radius: 50%; animation: sp 0.8s linear infinite; margin: 0 auto 8px; }
+@keyframes sp { to { transform: rotate(360deg); } }
+.al { padding: 11px 13px; border-radius: var(--rs); font-size: 13px; margin-bottom: 12px; display: none; }
+.al-e { background: rgba(176,64,48,0.1); border: 1px solid var(--red); color: #9E3A2A; }
+.al-ok { background: rgba(74,122,58,0.1); border: 1px solid var(--green); color: #3D6830; }
+.al-w { background: rgba(196,144,48,0.1); border: 1px solid var(--warn); color: #8A6A10; }
+.empty { text-align: center; padding: 28px 20px; color: var(--text2); font-size: 14px; }
+.einit { text-align: center; padding: 50px 20px; }
+.einit .spin { width: 38px; height: 38px; border-width: 4px; }
+.einit p { margin-top: 14px; color: var(--text2); font-size: 14px; }
+.hora { text-align: center; font-size: 13px; color: var(--text2); padding: 6px 0 10px; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN DESACTIVADO TEMPORALMENTE -->
+<div id="login-screen" style="display:none"></div>
+
+<!-- APP -->
+<div id="app" style="display:block;padding-bottom:80px">
+  <div class="header">
+    <div class="h-top">
+      <div class="logo">
+        <div class="logo-icon">U</div>
+        <div>
+          <div class="logo-text">Umma · Control</div>
+          <div class="logo-sub" id="fecha-lbl">--</div>
+        </div>
+      </div>
+      <div class="h-right">
+        <div class="dot dot-load" id="dot"></div>
+      </div>
+    </div>
+    <div class="tabs">
+      <button class="tab on" onclick="goTab('entrada',this)">Entrada</button>
+      <button class="tab" onclick="goTab('salida',this)">Salida</button>
+      <button class="tab" onclick="goTab('historial',this)">Historial</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="einit" id="init-scr">
+      <div class="spin"></div>
+      <p id="init-msg">Cargando sistema de reconocimiento...</p>
+    </div>
+
+    <!-- ENTRADA -->
+    <div class="sec" id="tab-entrada">
+      <div class="hora" id="hora-lbl">--:--:--</div>
+      <div class="card" style="text-align:center;padding:9px;background:rgba(74,122,58,0.1);border:1px solid var(--green);margin-bottom:12px">
+        <span style="color:var(--green);font-weight:700;font-size:13px">🌅 REGISTRO DE ENTRADA</span>
+      </div>
+      <div class="card">
+        <div class="card-t">Verificación de identidad</div>
+        <div class="cam-wrap">
+          <video id="vid-e" autoplay playsinline muted></video>
+          <canvas class="mp-canvas" id="mp-canvas-e"></canvas>
+          <div class="cam-over">
+            <div class="oval" id="oval-e"></div>
+            <div class="cam-msg" id="msg-e">Presiona Iniciar</div>
+          </div>
+        </div>
+        <canvas class="hidden" id="snap-e"></canvas>
+        <div class="steps" id="steps-e">
+          <div class="step" id="se1"><div class="snum">1</div>Coloca tu cara en el óvalo</div>
+          <div class="step" id="se2"><div class="snum">2</div>Gira la cabeza lentamente</div>
+          <div class="step" id="se3"><div class="snum">3</div>Mira al frente — identificando</div>
+        </div>
+        <button class="btn btn-p" id="btn-start-e" onclick="startE()" style="margin-top:12px">📷 Iniciar verificación</button>
+        <button class="btn btn-s" id="btn-retry-e" onclick="retryE()" style="display:none;margin-top:8px">↩ Reintentar</button>
+      </div>
+      <div id="panel-e" style="display:none">
+        <div id="res-e"></div>
+        <div class="card" id="nombre-card" style="display:none">
+          <div class="card-t">Trabajador nuevo — escribe el nombre</div>
+          <input type="text" id="nombre-inp" placeholder="Nombre completo">
+        </div>
+        <div class="card" id="area-card" style="display:none">
+          <div class="card-t">¿A dónde va hoy?</div>
+          <div class="area-grid">
+            <button class="area-btn" id="btn-fab" onclick="setArea('fabrica')"><span style="font-size:20px">🏭</span>Fábrica</button>
+            <button class="area-btn" id="btn-obra" onclick="setArea('obra')"><span style="font-size:20px">🏗️</span>Obra</button>
+          </div>
+        </div>
+        <div class="al" id="al-e"></div>
+        <div class="load" id="load-e"><div class="spin"></div>Guardando...</div>
+        <button class="btn btn-g" id="btn-save-e" onclick="saveEntrada()" style="display:none">✅ Confirmar entrada</button>
+      </div>
+    </div>
+
+    <!-- SALIDA -->
+    <div class="sec" id="tab-salida">
+      <div class="card" style="text-align:center;padding:9px;background:rgba(176,64,48,0.1);border:1px solid var(--red);margin-bottom:12px">
+        <span style="color:var(--red);font-weight:700;font-size:13px">🌆 VERIFICACIÓN DE SALIDA</span>
+        <span style="font-size:11px;color:var(--text2);margin-left:6px">Pendientes: <span id="pend-cnt">0</span></span>
+      </div>
+      <div class="card">
+        <div class="card-t">Verificación de identidad</div>
+        <div class="cam-wrap">
+          <video id="vid-s" autoplay playsinline muted></video>
+          <canvas class="mp-canvas" id="mp-canvas-s"></canvas>
+          <div class="cam-over">
+            <div class="oval" id="oval-s"></div>
+            <div class="cam-msg" id="msg-s">Presiona Iniciar</div>
+          </div>
+        </div>
+        <canvas class="hidden" id="snap-s"></canvas>
+        <div class="steps" id="steps-s">
+          <div class="step" id="ss1"><div class="snum">1</div>Coloca tu cara en el óvalo</div>
+          <div class="step" id="ss2"><div class="snum">2</div>Gira la cabeza lentamente</div>
+          <div class="step" id="ss3"><div class="snum">3</div>Mira al frente — identificando</div>
+        </div>
+        <button class="btn btn-p" id="btn-start-s" onclick="startS()" style="margin-top:12px">📷 Iniciar verificación</button>
+        <button class="btn btn-s" id="btn-retry-s" onclick="retryS()" style="display:none;margin-top:8px">↩ Reintentar</button>
+      </div>
+      <div id="panel-s" style="display:none">
+        <div id="res-s"></div>
+        <div class="al" id="al-s"></div>
+        <button class="btn btn-g" id="btn-auth" onclick="authPago()" style="display:none;margin-top:8px">💰 Autorizar pago</button>
+      </div>
+      <div class="card" style="margin-top:4px">
+        <div class="card-t">Entradas de hoy</div>
+        <div id="list-hoy"><div class="empty">Sin entradas hoy</div></div>
+      </div>
+    </div>
+
+    <!-- HISTORIAL -->
+    <div class="sec" id="tab-historial">
+      <div class="sgrid">
+        <div class="scard"><div class="snum" id="st-e" style="color:var(--green)">0</div><div class="slbl">Entradas</div></div>
+        <div class="scard"><div class="snum" id="st-s" style="color:var(--red)">0</div><div class="slbl">Salidas</div></div>
+        <div class="scard"><div class="snum" id="st-a" style="color:var(--green)">0</div><div class="slbl">Autorizados</div></div>
+        <div class="scard"><div class="snum" id="st-w" style="color:var(--accent)">0</div><div class="slbl">Trabajadores</div></div>
+      </div>
+      <div class="card">
+        <div class="card-t">Registros del día</div>
+        <div id="list-hist"><div class="empty">Sin registros</div></div>
+      </div>
+      <button class="btn btn-s" onclick="exportCSV()" style="margin-top:4px">📊 Exportar CSV</button>
+      <button class="btn btn-s" onclick="cleanPhotos()" style="margin-top:8px">🧹 Limpiar fotos antiguas</button>
+      <button class="btn btn-r" onclick="resetApp()" style="margin-top:8px">🗑️ Resetear app</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== CONFIG =====
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwR4Zm9rKZiMzXYVVloQlsONpbt_y9kMvnhy0mb4Vam87lNKw7Y_zqE7Syk_16nTw/exec';
+const DUP = 0.12, MATCH = 0.55, VERIFY = 0.30, TURN = 0.07, CLEANUP = 14;
+const DR = 'u_reg', DW = 'u_workers', DP = 'u_photos';
+
+let regs = JSON.parse(localStorage.getItem(DR)||'[]');
+let workers = JSON.parse(localStorage.getItem(DW)||'[]');
+let photos = JSON.parse(localStorage.getItem(DP)||'[]');
+let faceReady = false;
+
+// Entrada state
+let eRunning = false, eCam = null, eMesh = null;
+let eDesc = null, eFoto = null, eMatch = null, eArea = null;
+
+// Salida state  
+let sRunning = false, sCam = null, sMesh = null;
+let sDesc = null, sFoto = null, sTrab = null;
+
+// Auto start
+window.addEventListener('load', () => initApp());
+
+// ===== INIT =====
+function initApp() {
+  document.getElementById('fecha-lbl').textContent = getFecha();
+  setInterval(()=>{ const el=document.getElementById('hora-lbl'); if(el) el.textContent=getHora(); }, 1000);
+  autoClean();
+  loadFaceModels();
+}
+
+async function loadFaceModels() {
+  try {
+    document.getElementById('init-msg').textContent = 'Cargando IA de reconocimiento...';
+    const M = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.13/model';
+    await Promise.all([
+      faceapi.nets.tinyFaceDetector.loadFromUri(M),
+      faceapi.nets.faceRecognitionNet.loadFromUri(M),
+      faceapi.nets.faceLandmark68TinyNet.loadFromUri(M)
+    ]);
+    faceReady = true;
+    document.getElementById('dot').className = 'dot dot-ok';
+    document.getElementById('init-scr').style.display = 'none';
+    document.getElementById('tab-entrada').classList.add('on');
+    refreshPend();
+  } catch(e) {
+    document.getElementById('init-msg').textContent = 'Error cargando IA. Recarga la página.';
+  }
+}
+
+// ===== UTILS =====
+const getFecha = () => new Date().toLocaleDateString('es-MX',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+const getHora = () => new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+const getHoraC = () => new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
+const getDate = () => new Date().toLocaleDateString('es-MX');
+const saveAll = () => { localStorage.setItem(DR,JSON.stringify(regs)); localStorage.setItem(DW,JSON.stringify(workers)); localStorage.setItem(DP,JSON.stringify(photos)); };
+
+function showAl(id, msg, t='e') {
+  const el = document.getElementById(id);
+  el.innerHTML = msg; el.style.display = 'block';
+  el.className = 'al al-'+t;
+  setTimeout(()=>el.style.display='none', 5000);
+}
+
+function goTab(tab, btn) {
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('tab-'+tab).classList.add('on');
+  if(btn) btn.classList.add('on');
+  stopE(); stopS();
+  if(tab==='historial') updateHist();
+  if(tab==='salida') refreshPend();
+}
+
+async function send(data) {
+  try { await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(data)}); return true; }
+  catch(e) { return false; }
+}
+
+// ===== FACE-API (reconocimiento, solo foto estática) =====
+async function getDesc(src) {
+  const img = await new Promise((res,rej)=>{ const i=new Image(); i.crossOrigin='anonymous'; i.onload=()=>res(i); i.onerror=rej; i.src=src; });
+  let d = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({inputSize:416,scoreThreshold:0.3})).withFaceLandmarks(true).withFaceDescriptor();
+  if(!d) d = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({inputSize:224,scoreThreshold:0.2})).withFaceLandmarks(true).withFaceDescriptor();
+  return d ? Array.from(d.descriptor) : null;
+}
+function dist(a,b) { let s=0; for(let i=0;i<a.length;i++) s+=(a[i]-b[i])**2; return Math.sqrt(s); }
+function checkDup(desc) {
+  const cut = Date.now()-CLEANUP*86400000;
+  for(const p of photos.filter(x=>x.ts>cut)) { if(dist(desc,p.desc)<DUP) return {dup:true,nombre:p.nombre}; }
+  return {dup:false};
+}
+function findWorker(desc) {
+  let best=null, bd=Infinity;
+  for(const w of workers){ const d=dist(desc,w.descriptor); if(d<bd){bd=d;best=w;} }
+  return (best&&bd<MATCH) ? {found:true,worker:best,dist:bd} : {found:false};
+}
+
+// ===== MEDIAPIPE LIVENESS =====
+function captura(videoId, canvasId) {
+  const v=document.getElementById(videoId), c=document.getElementById(canvasId);
+  c.width=v.videoWidth||480; c.height=v.videoHeight||640;
+  const ctx=c.getContext('2d');
+  ctx.save(); ctx.translate(c.width,0); ctx.scale(-1,1); ctx.drawImage(v,0,0); ctx.restore();
+  return c.toDataURL('image/jpeg',0.78);
+}
+
+function buildMesh(videoEl, onResults) {
+  const mesh = new FaceMesh({locateFile: f=>`https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${f}`});
+  mesh.setOptions({ maxNumFaces:1, refineLandmarks:false, minDetectionConfidence:0.5, minTrackingConfidence:0.5 });
+  mesh.onResults(onResults);
+  const cam = new Camera(videoEl, {
+    onFrame: async () => { await mesh.send({image: videoEl}); },
+    width: 480, height: 640
+  });
+  cam.start();
+  return {mesh, cam};
+}
+
+function getNoseX(lm, W) {
+  // landmark 1 = nose tip in face_mesh (468 points)
+  const nose = lm[1];
+  return (nose.x - 0.5); // -0.5 to +0.5 range
+}
+
+function setStep(id, state) {
+  const el = document.getElementById(id); if(!el) return;
+  el.className = 'step ' + state;
+  const n = el.querySelector('.snum');
+  if(state==='ok') n.textContent='✓';
+}
+
+function runLiveness(id, onDone) {
+  const isE = id==='e';
+  const vidId = isE?'vid-e':'vid-s';
+  const ovalId = isE?'oval-e':'oval-s';
+  const msgId = isE?'msg-e':'msg-s';
+  const stepsId = isE?'steps-e':'steps-s';
+  const s1 = isE?'se1':'ss1', s2=isE?'se2':'ss2', s3=isE?'se3':'ss3';
+  const vid = document.getElementById(vidId);
+  const oval = document.getElementById(ovalId);
+  const msg = document.getElementById(msgId);
+
+  document.getElementById(stepsId).style.display = 'flex';
+  setStep(s1,'on'); setStep(s2,''); setStep(s3,'');
+  msg.textContent = 'Coloca tu cara en el óvalo';
+  oval.className = 'oval';
+
+  let faceFound = false, baseX = null, turned = false;
+
+  const {mesh, cam} = buildMesh(vid, (results) => {
+    const running = isE ? eRunning : sRunning;
+    if(!running) return;
+
+    if(!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) {
+      oval.className = 'oval';
+      if(faceFound) msg.textContent = 'Vuelve al óvalo';
+      return;
+    }
+
+    const lm = results.multiFaceLandmarks[0];
+
+    if(!faceFound) {
+      faceFound = true;
+      setStep(s1,'ok'); setStep(s2,'on');
+      oval.className = 'oval det';
+      msg.textContent = '↔️ Gira la cabeza lentamente';
+      baseX = getNoseX(lm, 1);
+    }
+
+    if(!turned && baseX !== null) {
+      const nx = getNoseX(lm, 1);
+      const shift = Math.abs(nx - baseX);
+      if(shift > TURN) {
+        turned = true;
+        setStep(s2,'ok'); setStep(s3,'on');
+        oval.className = 'oval mov';
+        msg.textContent = '⏳ Mira al frente...';
+
+        setTimeout(async () => {
+          if(isE) { if(!eRunning) return; }
+          else { if(!sRunning) return; }
+          msg.textContent = '📸 Capturando...';
+          const foto = captura(vidId, isE?'snap-e':'snap-s');
+          cam.stop();
+          setStep(s3,'ok');
+          oval.className = 'oval det';
+          onDone(foto);
+        }, 700);
+      }
+    }
+  });
+
+  if(isE) { eCam = cam; eMesh = mesh; }
+  else { sCam = cam; sMesh = mesh; }
+}
+
+function stopE() { eRunning=false; if(eCam) { try{eCam.stop();}catch(e){} eCam=null; } }
+function stopS() { sRunning=false; if(sCam) { try{sCam.stop();}catch(e){} sCam=null; } }
+
+// ===== ENTRADA =====
+async function startE() {
+  if(!faceReady) return alert('IA cargando, espera...');
+  stopE(); eRunning=true; eDesc=null; eFoto=null; eMatch=null; eArea=null;
+  document.getElementById('btn-start-e').style.display='none';
+  document.getElementById('btn-retry-e').style.display='none';
+  document.getElementById('panel-e').style.display='none';
+  document.getElementById('steps-e').style.display='none';
+
+  runLiveness('e', async (foto) => {
+    eRunning=false; eFoto=foto;
+    document.getElementById('btn-retry-e').style.display='block';
+    document.getElementById('msg-e').textContent='Analizando...';
+
+    // face-api para reconocimiento
+    const desc = await getDesc(foto);
+    eDesc = desc;
+    document.getElementById('panel-e').style.display='block';
+    await processEntrada();
+  });
+}
+
+function retryE() {
+  stopE();
+  document.getElementById('btn-start-e').style.display='block';
+  document.getElementById('btn-retry-e').style.display='none';
+  document.getElementById('panel-e').style.display='none';
+  document.getElementById('msg-e').textContent='Presiona Iniciar';
+  document.getElementById('oval-e').className='oval';
+  document.getElementById('steps-e').style.display='none';
+}
+
+async function processEntrada() {
+  const box = document.getElementById('res-e');
+  if(!eDesc) {
+    box.innerHTML='<div class="rbox err"><div class="rico">❌</div><div class="rtit">No se detectó rostro</div><div class="rsub">Intenta con mejor luz</div></div>';
+    return;
+  }
+  const dup = checkDup(eDesc);
+  if(dup.dup) {
+    box.innerHTML=`<div class="fraud"><div style="font-size:32px">🚨</div><div style="font-weight:800;color:var(--red);font-size:15px;margin:6px 0">FOTO REPETIDA</div><div style="font-size:12px;color:var(--text2)">Esta imagen ya fue registrada${dup.nombre?' ('+dup.nombre+')':''}.</div></div>`;
+    return;
+  }
+  const hoy=getDate(), match=findWorker(eDesc);
+  if(match.found) {
+    eMatch=match.worker;
+    const sim=Math.round((1-match.dist)*100);
+    const yaEntro=regs.find(r=>r.fecha===hoy&&r.tipo==='entrada'&&r.nombre.toLowerCase()===eMatch.nombre.toLowerCase());
+    if(yaEntro) { box.innerHTML=`<div class="rbox warn"><div class="rico">⚠️</div><div class="rtit">${eMatch.nombre}</div><div class="rsub">Ya tiene entrada hoy a las ${yaEntro.hora}</div></div>`; return; }
+    box.innerHTML=`<div class="wmatch">${eMatch.foto?`<img src="${eMatch.foto}">`:'<div style="width:50px;height:50px;border-radius:8px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:20px">👤</div>'}<div><div class="wname">¡${eMatch.nombre}!</div><div class="wsub">Reconocido · ${sim}% · Liveness ✅</div></div></div>`;
+    document.getElementById('nombre-card').style.display='none';
+  } else {
+    eMatch=null;
+    box.innerHTML='<div class="rbox info"><div class="rico">🆕</div><div class="rtit">Trabajador nuevo</div><div class="rsub">Escribe el nombre</div></div>';
+    document.getElementById('nombre-card').style.display='block';
+  }
+  document.getElementById('area-card').style.display='block';
+  document.getElementById('btn-save-e').style.display='none';
+}
+
+function setArea(area) {
+  eArea=area;
+  document.getElementById('btn-fab').className='area-btn'+(area==='fabrica'?' on':'');
+  document.getElementById('btn-obra').className='area-btn'+(area==='obra'?' on':'');
+  document.getElementById('btn-save-e').style.display='block';
+}
+
+async function saveEntrada() {
+  let nombre = eMatch ? eMatch.nombre : document.getElementById('nombre-inp').value.trim();
+  if(!nombre) return showAl('al-e','Escribe el nombre.');
+  if(!eArea) return showAl('al-e','Selecciona Fábrica u Obra.');
+  if(!eDesc) return showAl('al-e','Error en verificación.');
+  const hoy=getDate();
+  const yaEntro=regs.find(r=>r.fecha===hoy&&r.tipo==='entrada'&&r.nombre.toLowerCase()===nombre.toLowerCase());
+  if(yaEntro) return showAl('al-e',`⚠️ ${nombre} ya tiene entrada hoy.`,'w');
+  document.getElementById('load-e').style.display='block';
+  document.getElementById('btn-save-e').style.display='none';
+  if(!eMatch) workers.push({nombre,descriptor:eDesc,foto:eFoto,createdAt:Date.now()});
+  photos.push({desc:eDesc,ts:Date.now(),nombre});
+  const reg={nombre,tipo:'entrada',area:eArea,foto:eFoto,descriptor:eDesc,timestamp:Date.now(),fecha:hoy,hora:getHoraC(),pago:null};
+  regs.push(reg); saveAll();
+  await send({nombre,tipo:'entrada',fecha:hoy,hora:reg.hora,area:eArea,pago:'',horaEntrada:'',foto:eFoto});
+  document.getElementById('load-e').style.display='none';
+  document.getElementById('res-e').innerHTML=`<div class="rbox ok"><div class="rico">✅</div><div class="rtit">Entrada registrada</div><div class="rsub">${nombre} · ${eArea.charAt(0).toUpperCase()+eArea.slice(1)} · ${reg.hora}</div></div>`;
+  document.getElementById('nombre-card').style.display='none';
+  document.getElementById('area-card').style.display='none';
+  document.getElementById('btn-retry-e').textContent='↩ Registrar otro';
+  refreshPend();
+}
+
+// ===== SALIDA =====
+async function startS() {
+  if(!faceReady) return alert('IA cargando...');
+  stopS(); sRunning=true; sDesc=null; sFoto=null; sTrab=null;
+  document.getElementById('btn-start-s').style.display='none';
+  document.getElementById('btn-retry-s').style.display='none';
+  document.getElementById('panel-s').style.display='none';
+  document.getElementById('steps-s').style.display='none';
+
+  runLiveness('s', async (foto) => {
+    sRunning=false; sFoto=foto;
+    document.getElementById('btn-retry-s').style.display='block';
+    document.getElementById('msg-s').textContent='Analizando...';
+    const desc = await getDesc(foto);
+    sDesc=desc;
+    document.getElementById('panel-s').style.display='block';
+    await processSalida();
+  });
+}
+
+function retryS() {
+  stopS();
+  document.getElementById('btn-start-s').style.display='block';
+  document.getElementById('btn-retry-s').style.display='none';
+  document.getElementById('panel-s').style.display='none';
+  document.getElementById('msg-s').textContent='Presiona Iniciar';
+  document.getElementById('oval-s').className='oval';
+  document.getElementById('steps-s').style.display='none';
+}
+
+async function processSalida() {
+  const box=document.getElementById('res-s');
+  if(!sDesc) { box.innerHTML='<div class="rbox err"><div class="rico">❌</div><div class="rtit">No se detectó rostro</div><div class="rsub">Intenta con mejor luz</div></div>'; return; }
+  const dup=checkDup(sDesc);
+  if(dup.dup) { box.innerHTML=`<div class="fraud"><div style="font-size:32px">🚨</div><div style="font-weight:800;color:var(--red);font-size:15px;margin:6px 0">FOTO REPETIDA</div><div style="font-size:12px;color:var(--text2)">Esta imagen ya fue usada.</div></div>`; return; }
+  const hoy=getDate();
+  const ents=regs.filter(r=>r.fecha===hoy&&r.tipo==='entrada');
+  const sals=regs.filter(r=>r.fecha===hoy&&r.tipo==='salida').map(s=>s.nombre.toLowerCase());
+  const pend=ents.filter(e=>!sals.includes(e.nombre.toLowerCase()));
+  let best=null, bd=Infinity;
+  for(const p of pend){ if(p.descriptor){ const d=dist(sDesc,p.descriptor); if(d<bd){bd=d;best=p;} } }
+  if(!best||bd>VERIFY){ const wm=findWorker(sDesc); if(wm.found){ const pe=pend.find(p=>p.nombre.toLowerCase()===wm.worker.nombre.toLowerCase()); if(pe){best=pe;bd=wm.dist;} } }
+  if(!best){ box.innerHTML='<div class="rbox err"><div class="rico">❌</div><div class="rtit">Sin coincidencia</div><div class="rsub">No coincide con ninguna entrada de hoy</div></div>'; return; }
+  sTrab=best;
+  const sim=Math.round((1-bd)*100), autoOk=bd<VERIFY;
+  box.innerHTML=`<div class="wmatch" style="border-color:${autoOk?'var(--green)':'var(--red)'}">${best.foto?`<img src="${best.foto}">`:'<div style="width:50px;height:50px;border-radius:8px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:20px">👤</div>'}<div><div class="wname" style="color:${autoOk?'var(--green)':'var(--red)'}">${best.nombre}</div><div class="wsub">Similitud: ${sim}% · Liveness ✅</div><div class="wsub">Entrada: ${best.hora}</div></div></div>`;
+  
+  if(autoOk) {
+    document.getElementById('btn-auth').style.display='block';
+  } else {
+    document.getElementById('res-s').insertAdjacentHTML('afterend', `
+      <div class="rbox err" style="margin-top:10px">
+        <div class="rico">❌</div>
+        <div class="rtit">Identidad no confirmada</div>
+        <div class="rsub">Similitud ${sim}% — mínimo requerido 70%</div>
+        <div class="rsub" style="margin-top:6px">El rostro no coincide con la entrada registrada</div>
+      </div>
+      <button class="btn btn-s" onclick="forzarAutorizacion()" style="margin-top:8px;font-size:13px">🔑 Autorizar con clave admin</button>
+    `);
+  }
+}
+
+function forzarAutorizacion() {
+  const c = prompt('Clave de administrador:');
+  if(!c) return;
+  if(c !== '123456') { alert('Clave incorrecta.'); return; }
+  document.getElementById('btn-auth').style.display = 'block';
+  document.getElementById('btn-auth').textContent = '💰 Autorizar pago (admin)';
+}
+
+async function authPago() {
+  if(!sTrab) return;
+  const hoy=getDate();
+  const yaSalio=regs.find(r=>r.fecha===hoy&&r.tipo==='salida'&&r.nombre.toLowerCase()===sTrab.nombre.toLowerCase());
+  if(yaSalio){ showAl('al-s',`⚠️ ${sTrab.nombre} ya tiene salida hoy.`,'w'); document.getElementById('btn-auth').style.display='none'; return; }
+  const btn=document.getElementById('btn-auth'); btn.disabled=true; btn.textContent='⏳ Procesando...';
+  const horaSalida=getHoraC();
+  if(sDesc) photos.push({desc:sDesc,ts:Date.now(),nombre:sTrab.nombre});
+  const reg={nombre:sTrab.nombre,tipo:'salida',foto:sFoto,timestamp:Date.now(),fecha:hoy,hora:horaSalida,pago:'autorizado',horaEntrada:sTrab.hora};
+  regs.push(reg); saveAll();
+  await send({nombre:reg.nombre,tipo:'salida',fecha:hoy,hora:horaSalida,pago:'autorizado',horaEntrada:sTrab.hora,foto:sFoto});
+  btn.style.display='none'; btn.disabled=false; btn.textContent='💰 Autorizar pago';
+  document.getElementById('res-s').innerHTML=`<div class="rbox ok"><div class="rico">💰</div><div class="rtit">Pago autorizado</div><div class="rsub">${sTrab.nombre} · ${horaSalida}</div></div>`;
+  sTrab=null; refreshPend();
+}
+
+// ===== PENDIENTES =====
+function refreshPend() {
+  const hoy=getDate();
+  const ents=regs.filter(r=>r.fecha===hoy&&r.tipo==='entrada');
+  const sals=regs.filter(r=>r.fecha===hoy&&r.tipo==='salida').map(s=>s.nombre.toLowerCase());
+  const pend=ents.filter(e=>!sals.includes(e.nombre.toLowerCase()));
+  const el=document.getElementById('pend-cnt'); if(el) el.textContent=pend.length;
+  const lista=document.getElementById('list-hoy'); if(!lista) return;
+  if(!ents.length){ lista.innerHTML='<div class="empty">Sin entradas hoy</div>'; return; }
+  lista.innerHTML=ents.map(r=>{ const p=sals.includes(r.nombre.toLowerCase()); return `<div class="ri"><div style="display:flex;align-items:center;gap:10px">${r.foto?`<img class="rfoto" src="${r.foto}">`:'<div style="width:42px;height:42px;border-radius:7px;background:var(--surface2);display:flex;align-items:center;justify-content:center">👤</div>'}<div style="flex:1"><div class="rname">${r.nombre}</div><div class="rmeta">Entrada: ${r.hora} · ${r.area?r.area.charAt(0).toUpperCase()+r.area.slice(1):''}</div></div><span class="badge ${p?'b-ok':'b-e'}">${p?'✅ PAGADO':'PENDIENTE'}</span></div></div>`; }).join('');
+}
+
+// ===== HISTORIAL =====
+function updateHist() {
+  const hoy=getDate(), hoyR=regs.filter(r=>r.fecha===hoy);
+  document.getElementById('st-e').textContent=hoyR.filter(r=>r.tipo==='entrada').length;
+  document.getElementById('st-s').textContent=hoyR.filter(r=>r.tipo==='salida').length;
+  document.getElementById('st-a').textContent=hoyR.filter(r=>r.pago==='autorizado').length;
+  document.getElementById('st-w').textContent=workers.length;
+  const lista=document.getElementById('list-hist'), ents=hoyR.filter(r=>r.tipo==='entrada');
+  if(!ents.length){ lista.innerHTML='<div class="empty">Sin registros hoy</div>'; return; }
+  lista.innerHTML=[...ents].reverse().map(r=>{ const sal=hoyR.find(s=>s.tipo==='salida'&&s.nombre.toLowerCase()===r.nombre.toLowerCase()); return `<div class="ri"><div style="display:flex;align-items:center;gap:10px">${r.foto?`<img class="rfoto" src="${r.foto}">`:'<div style="width:42px;height:42px;border-radius:7px;background:var(--surface2);display:flex;align-items:center;justify-content:center">👤</div>'}<div style="flex:1"><div class="rname">${r.nombre}</div><div class="rmeta">${r.area?'📍 '+r.area.charAt(0).toUpperCase()+r.area.slice(1):''}</div></div></div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:7px;padding-left:52px"><span class="badge b-e">🌅 ${r.hora}</span>${sal?`<span class="badge ${sal.pago==='autorizado'?'b-ok':'b-no'}">🌆 ${sal.hora} · ${sal.pago==='autorizado'?'✅ Autorizado':'❌ Rechazado'}</span>`:'<span class="badge b-p">⏳ Sin salida</span>'}</div></div>`; }).join('');
+}
+
+// ===== MISC =====
+function autoClean() { const cut=Date.now()-CLEANUP*86400000; photos=photos.filter(p=>p.ts>cut); localStorage.setItem(DP,JSON.stringify(photos)); }
+function cleanPhotos() { const cut=Date.now()-CLEANUP*86400000; const b=photos.length; photos=photos.filter(p=>p.ts>cut); localStorage.setItem(DP,JSON.stringify(photos)); alert(`🧹 ${b-photos.length} fotos eliminadas.`); }
+function resetApp() {
+  const c=prompt('Clave de administrador:'); if(!c) return;
+  if(c!=='123456'){alert('Clave incorrecta.');return;}
+  if(!confirm('¿Borrar toda la memoria en este dispositivo?')) return;
+  localStorage.clear(); regs=[]; workers=[]; photos=[];
+  alert('✅ App reseteada.'); updateHist();
+}
+function exportCSV() {
+  const hoy=getDate(), datos=regs.filter(r=>r.fecha===hoy);
+  if(!datos.length){alert('Sin registros hoy.');return;}
+  const rows=[['Nombre','Tipo','Fecha','Hora','Área','Pago','Hora Entrada'],...datos.map(r=>[r.nombre,r.tipo,r.fecha,r.hora,r.area||'',r.pago||'',r.horaEntrada||''])];
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([rows.map(r=>r.join(',')).join('\n')],{type:'text/csv'})); a.download=`umma_${hoy.replace(/\//g,'-')}.csv`; a.click();
+}
+</script>
+</body>
+</html>
