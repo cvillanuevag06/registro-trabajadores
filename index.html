@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -7,6 +8,7 @@
 <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/face_mesh.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 :root {
   --bg: #C8C4BE; --surface: #fff; --surface2: #E4E0DB;
@@ -851,31 +853,113 @@ function updateHist(){
 }
 
 // EXPORT
-function exportSheet1(){
-  const hoy=getDate(),datos=regs.filter(r=>r.fecha===hoy);
-  if(!datos.length){alert('Sin registros hoy.');return;}
-  const rows=[['Nombre','Tipo','Fecha','Hora','Área','Sueldo','Pago','Supervisor','Hora Entrada'],...datos.map(r=>[r.nombre,r.tipo,r.fecha,r.hora,r.area||'',r.sueldo||'',r.pago||'',r.supervisor||'',r.horaEntrada||''])];
-  dlCSV(rows,`umma_registros_${hoy.replace(/\//g,'-')}.csv`);
+function hexToARGB(hex){return 'FF'+hex.replace('#','').toUpperCase();}
+
+function calcTiempo(h1,h2){
+  if(!h1||!h2)return '';
+  const [eh,em]=h1.split(':').map(Number);
+  const [sh,sm]=h2.split(':').map(Number);
+  const mins=(sh*60+sm)-(eh*60+em);
+  return mins>0?`${Math.floor(mins/60)}h ${mins%60}m`:'';
 }
+
+function exportSheet1(){
+  const hoy=getDate(),ents=regs.filter(r=>r.fecha===hoy&&r.tipo==='entrada');
+  if(!ents.length){alert('Sin entradas hoy.');return;}
+  const wb=XLSX.utils.book_new();
+  const headers=['Nombre','Fecha','Hora Entrada','Hora Salida','Tiempo Trabajado','Área','Sueldo','Supervisor','Pago'];
+  const wsData=[headers];
+  const rowColors=[null];
+  ents.forEach(r=>{
+    const sal=regs.find(s=>s.fecha===hoy&&s.tipo==='salida'&&s.nombre===r.nombre);
+    const sup=sups.find(s=>s.nombre===r.supervisor);
+    wsData.push([r.nombre,r.fecha,r.hora,sal?sal.hora:'',calcTiempo(r.hora,sal?sal.hora:''),r.area||'',r.sueldo||'',r.supervisor||'',sal?sal.pago:'pendiente']);
+    rowColors.push(sup?hexToARGB(sup.color):null);
+  });
+  const ws=XLSX.utils.aoa_to_sheet(wsData);
+  const range=XLSX.utils.decode_range(ws['!ref']);
+  for(let C=range.s.c;C<=range.e.c;C++){
+    const addr=XLSX.utils.encode_cell({r:0,c:C});
+    if(ws[addr])ws[addr].s={font:{bold:true,color:{rgb:'FFFFFFFF'}},fill:{fgColor:{rgb:'FF2A1F15'}},alignment:{horizontal:'center'}};
+  }
+  for(let R=1;R<wsData.length;R++){
+    if(rowColors[R]){
+      for(let C=range.s.c;C<=range.e.c;C++){
+        const addr=XLSX.utils.encode_cell({r:R,c:C});
+        if(!ws[addr])ws[addr]={v:'',t:'s'};
+        ws[addr].s={fill:{fgColor:{rgb:rowColors[R]}}};
+      }
+    }
+  }
+  ws['!cols']=[{wch:20},{wch:12},{wch:13},{wch:13},{wch:15},{wch:10},{wch:10},{wch:18},{wch:12}];
+  XLSX.utils.book_append_sheet(wb,ws,'Registros');
+  XLSX.writeFile(wb,`umma_registros_${hoy.replace(/\//g,'-')}.xlsx`);
+}
+
 function exportSheet2(){
   const hoy=getDate(),ents=regs.filter(r=>r.fecha===hoy&&r.tipo==='entrada');
   if(!ents.length){alert('Sin entradas hoy.');return;}
+  const wb=XLSX.utils.book_new();
+  const headers=['Supervisor','Nombre','Área','Sueldo','Hora Entrada','Hora Salida','Tiempo Trabajado','Pago'];
+  const wsData=[headers];
+  const rowColors=[null];
   const grupos={};
   ents.forEach(r=>{const s=r.supervisor||'Sin asignar';if(!grupos[s])grupos[s]=[];grupos[s].push(r);});
-  const rows=[['Supervisor','Color','Nombre','Área','Sueldo','Hora Entrada','Estado']];
-  Object.keys(grupos).forEach(sup=>{
-    const c=getSupColor(sup);
-    grupos[sup].forEach(r=>{
+  Object.keys(grupos).forEach(supNombre=>{
+    const sup=sups.find(s=>s.nombre===supNombre);
+    const color=sup?hexToARGB(sup.color):null;
+    grupos[supNombre].forEach(r=>{
       const sal=regs.find(s=>s.fecha===hoy&&s.tipo==='salida'&&s.nombre===r.nombre);
-      rows.push([sup,c,r.nombre,r.area||'',r.sueldo||0,r.hora,sal?sal.pago:'pendiente']);
+      wsData.push([supNombre,r.nombre,r.area||'',r.sueldo||0,r.hora,sal?sal.hora:'',calcTiempo(r.hora,sal?sal.hora:''),sal?sal.pago:'pendiente']);
+      rowColors.push(color);
     });
   });
-  dlCSV(rows,`umma_supervisores_${hoy.replace(/\//g,'-')}.csv`);
-}
-function dlCSV(rows,fn){
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([rows.map(r=>r.join(',')).join('\n')],{type:'text/csv;charset=utf-8;'}));
-  a.download=fn;a.click();
+  const ws=XLSX.utils.aoa_to_sheet(wsData);
+  const range=XLSX.utils.decode_range(ws['!ref']);
+  for(let C=range.s.c;C<=range.e.c;C++){
+    const addr=XLSX.utils.encode_cell({r:0,c:C});
+    if(ws[addr])ws[addr].s={font:{bold:true,color:{rgb:'FFFFFFFF'}},fill:{fgColor:{rgb:'FF2A1F15'}},alignment:{horizontal:'center'}};
+  }
+  for(let R=1;R<wsData.length;R++){
+    if(rowColors[R]){
+      for(let C=range.s.c;C<=range.e.c;C++){
+        const addr=XLSX.utils.encode_cell({r:R,c:C});
+        if(!ws[addr])ws[addr]={v:'',t:'s'};
+        ws[addr].s={fill:{fgColor:{rgb:rowColors[R]}}};
+      }
+    }
+  }
+  ws['!cols']=[{wch:18},{wch:20},{wch:10},{wch:10},{wch:13},{wch:13},{wch:15},{wch:12}];
+  XLSX.utils.book_append_sheet(wb,ws,'Por Supervisor');
+  Object.keys(grupos).filter(s=>s!=='Sin asignar').forEach(supNombre=>{
+    const sup=sups.find(s=>s.nombre===supNombre);
+    const color=sup?hexToARGB(sup.color):null;
+    const sd=[['Nombre','Área','Sueldo','Hora Entrada','Hora Salida','Tiempo Trabajado','Pago']];
+    const rc=[null];
+    grupos[supNombre].forEach(r=>{
+      const sal=regs.find(s=>s.fecha===hoy&&s.tipo==='salida'&&s.nombre===r.nombre);
+      sd.push([r.nombre,r.area||'',r.sueldo||0,r.hora,sal?sal.hora:'',calcTiempo(r.hora,sal?sal.hora:''),sal?sal.pago:'pendiente']);
+      rc.push(color);
+    });
+    const ws2=XLSX.utils.aoa_to_sheet(sd);
+    const r2=XLSX.utils.decode_range(ws2['!ref']);
+    for(let C=r2.s.c;C<=r2.e.c;C++){
+      const addr=XLSX.utils.encode_cell({r:0,c:C});
+      if(ws2[addr])ws2[addr].s={font:{bold:true,color:{rgb:'FFFFFFFF'}},fill:{fgColor:{rgb:'FF2A1F15'}}};
+    }
+    for(let R=1;R<sd.length;R++){
+      if(rc[R]){
+        for(let C=r2.s.c;C<=r2.e.c;C++){
+          const addr=XLSX.utils.encode_cell({r:R,c:C});
+          if(!ws2[addr])ws2[addr]={v:'',t:'s'};
+          ws2[addr].s={fill:{fgColor:{rgb:rc[R]}}};
+        }
+      }
+    }
+    ws2['!cols']=[{wch:20},{wch:10},{wch:10},{wch:13},{wch:13},{wch:15},{wch:12}];
+    XLSX.utils.book_append_sheet(wb,ws2,supNombre.substring(0,31));
+  });
+  XLSX.writeFile(wb,`umma_supervisores_${hoy.replace(/\//g,'-')}.xlsx`);
 }
 
 // MISC
