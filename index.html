@@ -916,12 +916,8 @@ async function exportSheet2(){
   ws.columns=[
     {header:'Supervisor',key:'sup',width:20},
     {header:'Nombre',key:'nombre',width:22},
-    {header:'Área',key:'area',width:11},
-    {header:'Sueldo',key:'sueldo',width:10},
-    {header:'Hora Entrada',key:'horaE',width:14},
-    {header:'Hora Salida',key:'horaS',width:14},
-    {header:'Tiempo Trabajado',key:'tiempo',width:17},
-    {header:'Pago',key:'pago',width:13},
+    {header:'Área',key:'area',width:12},
+    {header:'Sueldo',key:'sueldo',width:12},
   ];
   ws.getRow(1).eachCell(cell=>{
     cell.font={bold:true,color:{argb:'FFFFFFFF'}};
@@ -933,9 +929,13 @@ async function exportSheet2(){
   Object.keys(grupos).forEach(supNombre=>{
     const sup=sups.find(s=>s.nombre===supNombre);
     const argb=sup?'FF'+hexColor(sup.color):null;
+    // Get area and sueldo from supervisor config if not set on worker
+    const supArea=sup?sup.area:'';
+    const supSueldo=sup?(sup.area==='obra'?cfg.sueldoObra:cfg.sueldoFabrica):0;
     grupos[supNombre].forEach(r=>{
-      const sal=regs.find(s=>s.fecha===hoy&&s.tipo==='salida'&&s.nombre===r.nombre);
-      const row=ws.addRow({sup:supNombre,nombre:r.nombre,area:r.area||'',sueldo:r.sueldo||0,horaE:r.hora,horaS:sal?sal.hora:'',tiempo:calcTiempo(r.hora,sal?sal.hora:''),pago:sal?sal.pago:'pendiente'});
+      const area=r.area||supArea||'';
+      const sueldo=r.sueldo||supSueldo||0;
+      const row=ws.addRow({sup:supNombre,nombre:r.nombre,area:area.charAt(0).toUpperCase()+area.slice(1),sueldo:'$'+sueldo});
       if(argb) row.eachCell(cell=>{cell.fill={type:'pattern',pattern:'solid',fgColor:{argb}};});
     });
   });
@@ -943,23 +943,22 @@ async function exportSheet2(){
   Object.keys(grupos).filter(s=>s!=='Sin asignar').forEach(supNombre=>{
     const sup=sups.find(s=>s.nombre===supNombre);
     const argb=sup?'FF'+hexColor(sup.color):null;
+    const supArea=sup?sup.area:'';
+    const supSueldo=sup?(sup.area==='obra'?cfg.sueldoObra:cfg.sueldoFabrica):0;
     const ws2=wb.addWorksheet(supNombre.substring(0,31));
     ws2.columns=[
       {header:'Nombre',key:'nombre',width:22},
-      {header:'Área',key:'area',width:11},
-      {header:'Sueldo',key:'sueldo',width:10},
-      {header:'Hora Entrada',key:'horaE',width:14},
-      {header:'Hora Salida',key:'horaS',width:14},
-      {header:'Tiempo Trabajado',key:'tiempo',width:17},
-      {header:'Pago',key:'pago',width:13},
+      {header:'Área',key:'area',width:12},
+      {header:'Sueldo',key:'sueldo',width:12},
     ];
     ws2.getRow(1).eachCell(cell=>{
       cell.font={bold:true,color:{argb:'FFFFFFFF'}};
       cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF2A1F15'}};
     });
     grupos[supNombre].forEach(r=>{
-      const sal=regs.find(s=>s.fecha===hoy&&s.tipo==='salida'&&s.nombre===r.nombre);
-      const row=ws2.addRow({nombre:r.nombre,area:r.area||'',sueldo:r.sueldo||0,horaE:r.hora,horaS:sal?sal.hora:'',tiempo:calcTiempo(r.hora,sal?sal.hora:''),pago:sal?sal.pago:'pendiente'});
+      const area=r.area||supArea||'';
+      const sueldo=r.sueldo||supSueldo||0;
+      const row=ws2.addRow({nombre:r.nombre,area:area.charAt(0).toUpperCase()+area.slice(1),sueldo:'$'+sueldo});
       if(argb) row.eachCell(cell=>{cell.fill={type:'pattern',pattern:'solid',fgColor:{argb}};});
     });
   });
