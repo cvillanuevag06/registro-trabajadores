@@ -9,48 +9,7 @@
 <!-- MediaPipe para cámara + liveness en tiempo real -->
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-  const firebaseConfig = {
-    apiKey: "AIzaSyBmr918w_YV9HZNnAlU4fK5OB_Urs2KYAo",
-    authDomain: "umma-control.firebaseapp.com",
-    projectId: "umma-control",
-    storageBucket: "umma-control.firebasestorage.app",
-    messagingSenderId: "367041994965",
-    appId: "1:367041994965:web:cb85d86208e729e75c825c"
-  };
-  const ALLOWED = [];
-  const checkAllowed = (email) => ALLOWED.length === 0 || ALLOWED.includes(email.toLowerCase());
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const provider = new GoogleAuthProvider();
-  window.loginGoogle = async () => {
-    try {
-      const r = await signInWithPopup(auth, provider);
-      if (!checkAllowed(r.user.email)) {
-        await signOut(auth);
-        document.getElementById('login-err').textContent = '⛔ Correo no autorizado.';
-        document.getElementById('login-err').style.display = 'block';
-      }
-    } catch(e) {
-      document.getElementById('login-err').textContent = 'Error al iniciar sesión.';
-      document.getElementById('login-err').style.display = 'block';
-    }
-  };
-  window.logoutGoogle = async () => { if(confirm('¿Cerrar sesión?')) await signOut(auth); };
-  onAuthStateChanged(auth, user => {
-    if (user && checkAllowed(user.email)) {
-      document.getElementById('login-screen').style.display = 'none';
-      document.getElementById('app').style.display = 'block';
-      document.getElementById('user-lbl').textContent = user.email;
-      if (!window._started) { window._started = true; initApp(); }
-    } else {
-      document.getElementById('login-screen').style.display = 'flex';
-      document.getElementById('app').style.display = 'none';
-    }
-  });
-</script>
+<!-- Login removido temporalmente -->
 <style>
 :root {
   --bg: #C8C4BE; --surface: #fff; --surface2: #E4E0DB;
@@ -175,23 +134,11 @@ canvas.hidden { display: none; }
 </head>
 <body>
 
-<!-- LOGIN -->
-<div id="login-screen">
-  <div>
-    <div class="login-logo">U</div>
-    <div class="login-title">Umma · Control</div>
-    <div class="login-sub">Sistema de registro de trabajadores</div>
-    <button class="btn-google" onclick="loginGoogle()">
-      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.35-8.16 2.35-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-      Iniciar sesión con Google
-    </button>
-    <div class="login-err" id="login-err"></div>
-    <div class="login-note">Solo cuentas autorizadas pueden acceder</div>
-  </div>
-</div>
+<!-- LOGIN DESACTIVADO TEMPORALMENTE -->
+<div id="login-screen" style="display:none"></div>
 
 <!-- APP -->
-<div id="app">
+<div id="app" style="display:block;padding-bottom:80px">
   <div class="header">
     <div class="h-top">
       <div class="logo">
@@ -202,9 +149,7 @@ canvas.hidden { display: none; }
         </div>
       </div>
       <div class="h-right">
-        <div class="user-lbl" id="user-lbl"></div>
         <div class="dot dot-load" id="dot"></div>
-        <button class="btn-out" onclick="logoutGoogle()">Salir</button>
       </div>
     </div>
     <div class="tabs">
@@ -337,6 +282,9 @@ let eDesc = null, eFoto = null, eMatch = null, eArea = null;
 // Salida state  
 let sRunning = false, sCam = null, sMesh = null;
 let sDesc = null, sFoto = null, sTrab = null;
+
+// Auto start
+window.addEventListener('load', () => initApp());
 
 // ===== INIT =====
 function initApp() {
