@@ -873,12 +873,11 @@ async function exportSheet1(){
     {header:'Hora Entrada',key:'horaE',width:14},
     {header:'Hora Salida',key:'horaS',width:14},
     {header:'Tiempo Trabajado',key:'tiempo',width:17},
-    {header:'Área',key:'area',width:11},
-    {header:'Sueldo',key:'sueldo',width:10},
+    {header:'Área',key:'area',width:12},
+    {header:'Sueldo',key:'sueldo',width:12},
     {header:'Supervisor',key:'sup',width:20},
     {header:'Pago',key:'pago',width:13},
   ];
-  // Style header
   ws.getRow(1).eachCell(cell=>{
     cell.font={bold:true,color:{argb:'FFFFFFFF'}};
     cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF2A1F15'}};
@@ -887,18 +886,15 @@ async function exportSheet1(){
   ents.forEach(r=>{
     const sal=regs.find(s=>s.fecha===hoy&&s.tipo==='salida'&&s.nombre===r.nombre);
     const sup=sups.find(s=>s.nombre===r.supervisor);
-    const row=ws.addRow({
+    const area=r.area||(sup?sup.area:'')||'';
+    const sueldo=r.sueldo||(sup?(sup.area==='obra'?cfg.sueldoObra:cfg.sueldoFabrica):'')||'';
+    ws.addRow({
       nombre:r.nombre, fecha:r.fecha, horaE:r.hora,
       horaS:sal?sal.hora:'', tiempo:calcTiempo(r.hora,sal?sal.hora:''),
-      area:r.area||'', sueldo:r.sueldo||'',
+      area:area?area.charAt(0).toUpperCase()+area.slice(1):'',
+      sueldo:sueldo?'$'+sueldo:'',
       sup:r.supervisor||'', pago:sal?sal.pago:'pendiente'
     });
-    if(sup&&sup.color){
-      const argb='FF'+hexColor(sup.color);
-      row.eachCell(cell=>{
-        cell.fill={type:'pattern',pattern:'solid',fgColor:{argb}};
-      });
-    }
   });
   const buf=await wb.xlsx.writeBuffer();
   const blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
@@ -935,7 +931,8 @@ async function exportSheet2(){
     grupos[supNombre].forEach(r=>{
       const area=r.area||supArea||'';
       const sueldo=r.sueldo||supSueldo||0;
-      const row=ws.addRow({sup:supNombre,nombre:r.nombre,area:area.charAt(0).toUpperCase()+area.slice(1),sueldo:'$'+sueldo});
+      const areaLabel=area?area.charAt(0).toUpperCase()+area.slice(1):'';
+      const row=ws.addRow({sup:supNombre,nombre:r.nombre,area:areaLabel,sueldo:sueldo?'$'+sueldo:''});
       if(argb) row.eachCell(cell=>{cell.fill={type:'pattern',pattern:'solid',fgColor:{argb}};});
     });
   });
@@ -958,7 +955,8 @@ async function exportSheet2(){
     grupos[supNombre].forEach(r=>{
       const area=r.area||supArea||'';
       const sueldo=r.sueldo||supSueldo||0;
-      const row=ws2.addRow({nombre:r.nombre,area:area.charAt(0).toUpperCase()+area.slice(1),sueldo:'$'+sueldo});
+      const areaLabel2=area?area.charAt(0).toUpperCase()+area.slice(1):'';
+      const row=ws2.addRow({nombre:r.nombre,area:areaLabel2,sueldo:sueldo?'$'+sueldo:''});
       if(argb) row.eachCell(cell=>{cell.fill={type:'pattern',pattern:'solid',fgColor:{argb}};});
     });
   });
