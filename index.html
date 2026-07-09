@@ -444,7 +444,7 @@ async function indexFace(base64Img, externalId){
   try{
     const clean = base64Img.split(',')[1] || base64Img;
     const resp = await fetch(FACE_FUNCTION_URL, {
-      method:'POST', headers:{'Content-Type':'application/json'},
+      method:'POST', headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY},
       body: JSON.stringify({action:'index', image_base64: clean, external_id: externalId})
     });
     const data = await resp.json();
@@ -458,7 +458,7 @@ async function searchFaceAWS(base64Img){
   try{
     const clean = base64Img.split(',')[1] || base64Img;
     const resp = await fetch(FACE_FUNCTION_URL, {
-      method:'POST', headers:{'Content-Type':'application/json'},
+      method:'POST', headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY},
       body: JSON.stringify({action:'search', image_base64: clean})
     });
     const data = await resp.json();
@@ -471,7 +471,7 @@ async function searchFaceAWS(base64Img){
 async function deleteFaceFromAWS(faceId){
   try{
     await fetch(FACE_FUNCTION_URL, {
-      method:'POST', headers:{'Content-Type':'application/json'},
+      method:'POST', headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY},
       body: JSON.stringify({action:'delete', face_id: faceId})
     });
   }catch(e){ console.error('deleteFace error', e); }
