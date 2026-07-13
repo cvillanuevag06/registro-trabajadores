@@ -2,6 +2,7 @@ import { useState } from 'react';
 import './App.css';
 import Header from './components/Header';
 import { AppDataProvider, useAppData } from './context/AppDataContext';
+import { AuthProvider } from './context/AuthContext';
 import Entrada from './tabs/Entrada';
 import Salida from './tabs/Salida';
 import Historial from './tabs/Historial';
@@ -61,9 +62,11 @@ function AppContent() {
 
 function App() {
   return (
-    <AppDataProvider>
-      <AppContent />
-    </AppDataProvider>
+    <AuthProvider>
+      <AppDataProvider>
+        <AppContent />
+      </AppDataProvider>
+    </AuthProvider>
   );
 }
 

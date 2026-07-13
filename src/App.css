@@ -40,3 +40,5 @@ input[type=text]:focus, input[type=password]:focus, input[type=email]:focus { bo
 .einit p { margin-top: 14px; color: var(--text2); font-size: 14px; }
 
 .hora { text-align: center; font-size: 13px; color: var(--text2); padding: 6px 0 10px; }
+
+.admin-h { font-size: 13px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid rgba(0,0,0,0.08); }
