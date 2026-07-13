@@ -57,3 +57,12 @@ input[type=text]:focus, input[type=password]:focus, input[type=email]:focus { bo
 .wsub { font-size: 12px; color: var(--text2); margin-top: 2px; }
 .load { display: none; text-align: center; padding: 10px; color: var(--text2); font-size: 13px; }
 .load .spin { width: 20px; height: 20px; border-width: 2px; display: inline-block; vertical-align: middle; margin: 0 8px 0 0; }
+
+.area-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.area-btn { padding: 13px; border-radius: var(--rs); border: 1.5px solid rgba(0,0,0,0.1); background: transparent; color: var(--text2); font-size: 14px; font-weight: 600; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; transition: all 0.2s; }
+.area-btn.on { border-color: var(--accent); color: var(--accent); background: rgba(107,82,64,0.08); }
+.worker-check-item { display: flex; align-items: center; gap: 10px; padding: 10px 8px; border-bottom: 1px solid rgba(0,0,0,0.05); cursor: pointer; border-radius: 8px; transition: background 0.15s; }
+.worker-check-item:last-child { border-bottom: none; }
+.worker-check-item.selected { background: rgba(74,122,58,0.07); }
+.wcheck { width: 22px; height: 22px; border-radius: 6px; border: 2px solid rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 13px; }
+.wcheck.checked { background: var(--green); border-color: var(--green); color: white; }
