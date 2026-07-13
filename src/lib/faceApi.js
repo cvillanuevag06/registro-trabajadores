@@ -57,3 +57,19 @@ export async function deleteFace(faceId) {
     console.error('deleteFace error', e);
   }
 }
+
+export async function createLivenessSession() {
+  const data = await callFaceFunction({ action: 'create-liveness-session' });
+  if (!data.sessionId) throw new Error(data.error || 'No se pudo crear la sesión de liveness');
+  return data.sessionId;
+}
+
+export async function getLivenessSessionResults(sessionId) {
+  const data = await callFaceFunction({ action: 'get-liveness-session-results', session_id: sessionId });
+  if (data.error) throw new Error(data.error);
+  return {
+    live: data.status === 'SUCCEEDED' && data.confidence >= 85,
+    confidence: data.confidence,
+    referenceImageBase64: data.referenceImage ? `data:image/jpeg;base64,${data.referenceImage}` : null,
+  };
+}
