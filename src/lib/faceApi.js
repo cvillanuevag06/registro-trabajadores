@@ -50,6 +50,24 @@ export async function searchFace(base64Img) {
   }
 }
 
+export async function findWorkerByFace(base64Img, workers) {
+  const r = await searchFace(base64Img);
+  if (!r.found || !r.externalId || !r.externalId.startsWith('worker_')) return { found: false };
+  const wId = r.externalId.replace('worker_', '');
+  const worker = workers.find((w) => String(w.id) === wId);
+  if (!worker) return { found: false };
+  return { found: true, worker, similarity: r.similarity };
+}
+
+export async function findSupervisorByFace(base64Img, sups) {
+  const r = await searchFace(base64Img);
+  if (!r.found || !r.externalId || !r.externalId.startsWith('sup_')) return { found: false };
+  const sId = r.externalId.replace('sup_', '');
+  const sup = sups.find((s) => String(s.id) === sId);
+  if (!sup) return { found: false };
+  return { found: true, sup, similarity: r.similarity };
+}
+
 export async function deleteFace(faceId) {
   try {
     await callFaceFunction({ action: 'delete', face_id: faceId });
