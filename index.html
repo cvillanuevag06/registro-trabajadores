@@ -327,6 +327,10 @@ canvas { display: none; }
         </div>
       </div>
       <div class="card">
+        <div class="admin-h">⏰ Pendientes de hoy (llegaron 7:16–7:30)</div>
+        <div id="pend-tarde-list" style="font-size:14px;color:var(--text2)">Sin pendientes.</div>
+      </div>
+      <div class="card">
         <div class="admin-h">💰 Sueldos base</div>
         <div id="sueldos-main">
           <button class="btn btn-p" onclick="abrirSueldos()">💰 Gestionar sueldos</button>
@@ -414,6 +418,16 @@ async function loadModels(){
 const getFecha=()=>new Date().toLocaleDateString('es-MX',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
 const getHora=()=>new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
 const getHoraC=()=>new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
+// Minutos tarde vs 7:15 (calculado con Date real, no parseando strings)
+const HORA_LIMITE={h:7,m:15}, GRACIA_MIN=15, JORNADA_MIN=615; // 7:15→17:30
+function calcMinTarde(){
+  const now=new Date();
+  const lim=new Date(now); lim.setHours(HORA_LIMITE.h,HORA_LIMITE.m,0,0);
+  return Math.max(0, Math.floor((now-lim)/60000));
+}
+function calcPagoDescuento(sueldo,minTarde){
+  return Math.max(0, Math.floor(sueldo - minTarde*sueldo/JORNADA_MIN));
+}
 const getDateISO=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
 const getDate=()=>new Date().toLocaleDateString('es-MX');
 
@@ -758,9 +772,13 @@ async function saveEntrada(){
   // AWS maneja duplicados
 
   const hora=getHoraC();
+  const minTarde=calcMinTarde();
+  // 0 min = a tiempo ('na') · 1-15 min (7:16-7:30) = lo decide admin ('pendiente') · >15 min = descuento automático ('cobrar')
+  const descEstado = minTarde===0 ? 'na' : (minTarde<=GRACIA_MIN ? 'pendiente' : 'cobrar');
   const {data:histRow, error:histErr} = await sb.from('historial').insert({
     trabajador_id: workerId, nombre, fecha: getDateISO(),
-    hora_entrada: hora, foto_entrada: eFoto, pago:'pendiente'
+    hora_entrada: hora, foto_entrada: eFoto, pago:'pendiente',
+    min_tarde: minTarde, descuento_estado: descEstado
   }).select().single();
 
   document.getElementById('load-e').style.display='none';
@@ -844,12 +862,21 @@ function forzarAuth(){
 async function authPago(){
   if(!sTrab)return;
   if(sTrab.hora_salida){showAl('al-s',`⚠️ ${sTrab.nombre} ya tiene salida hoy.`,'w');document.getElementById('btn-auth').style.display='none';return;}
+  // Bloquear si el admin aún no decide cobrar/perdonar (llegó 7:16-7:30)
+  if(sTrab.descuento_estado==='pendiente'){
+    showAl('al-s',`⏰ ${sTrab.nombre} llegó ${sTrab.min_tarde} min tarde. El admin debe decidir Cobrar o Perdonar en Admin → Pendientes antes de autorizar el pago.`,'w');
+    return;
+  }
   const btn=document.getElementById('btn-auth');btn.disabled=true;btn.textContent='⏳ Procesando...';
   const h=getHoraC();
   // AWS maneja duplicados
 
+  const sueldoBase=Number(sTrab.sueldo||0);
+  const conDesc = sTrab.descuento_estado==='cobrar' && sTrab.min_tarde>0;
+  const pagoFinal = conDesc ? calcPagoDescuento(sueldoBase, sTrab.min_tarde) : sueldoBase;
+
   const {data, error} = await sb.from('historial').update({
-    hora_salida: h, foto_salida: sFoto, pago:'autorizado'
+    hora_salida: h, foto_salida: sFoto, pago:'autorizado', pago_final: pagoFinal
   }).eq('id', sTrab.id).select().single();
 
   btn.style.display='none';btn.disabled=false;btn.textContent='💰 Autorizar pago';
@@ -858,7 +885,8 @@ async function authPago(){
   const idx=regsHoy.findIndex(r=>r.id===sTrab.id);
   if(idx>-1) regsHoy[idx]=data;
 
-  document.getElementById('res-s').innerHTML=`<div class="rbox ok"><div class="rico">💰</div><div class="rtit">Pago autorizado</div><div class="rsub">${sTrab.nombre} · $${data.sueldo||0} · ${h}</div></div>`;
+  const descTxt = conDesc ? ` (descuento $${sueldoBase-pagoFinal} por ${sTrab.min_tarde} min tarde)` : (sTrab.descuento_estado==='perdonado' ? ' (retardo perdonado)' : '');
+  document.getElementById('res-s').innerHTML=`<div class="rbox ok"><div class="rico">💰</div><div class="rtit">Pago autorizado</div><div class="rsub">${sTrab.nombre} · $${pagoFinal}${descTxt} · ${h}</div></div>`;
   sTrab=null;refreshPend();
 }
 
@@ -1007,6 +1035,32 @@ function unlockAdmin(){
   document.getElementById('sup-admin-form').style.display='none';
   document.getElementById('sueldos-main').style.display='block';
   document.getElementById('sueldos-form').style.display='none';
+  renderPendTarde();
+}
+function renderPendTarde(){
+  const el=document.getElementById('pend-tarde-list');
+  if(!el)return;
+  const pend=regsHoy.filter(r=>r.descuento_estado==='pendiente');
+  if(!pend.length){el.innerHTML='Sin pendientes.';return;}
+  el.innerHTML=pend.map(r=>{
+    const sueldo=Number(r.sueldo||0);
+    const desc = sueldo ? '$'+(sueldo-calcPagoDescuento(sueldo,r.min_tarde)) : '(sueldo aún sin asignar)';
+    return `<div style="border:1px solid rgba(0,0,0,0.1);border-radius:8px;padding:10px;margin-bottom:8px">
+      <div style="font-weight:600;color:var(--text)">${r.nombre}</div>
+      <div style="font-size:13px;margin:2px 0 8px">Entrada ${r.hora_entrada} · ${r.min_tarde} min tarde · Descuento: ${desc}</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-g" style="flex:1;font-size:13px;padding:8px" onclick="decidirDescuento(${r.id},'cobrar')">💸 Cobrar</button>
+        <button class="btn btn-s" style="flex:1;font-size:13px;padding:8px" onclick="decidirDescuento(${r.id},'perdonado')">🤝 Perdonar</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+async function decidirDescuento(id,estado){
+  const {data,error}=await sb.from('historial').update({descuento_estado:estado}).eq('id',id).select().single();
+  if(error){alert('Error: '+error.message);return;}
+  const idx=regsHoy.findIndex(r=>r.id===id);
+  if(idx>-1)regsHoy[idx]=data;
+  renderPendTarde();
 }
 function lockAdmin(){
   document.getElementById('admin-lock').style.display='block';
@@ -1171,6 +1225,9 @@ async function exportSheet1(){
     {header:'Área',key:'area',width:12},
     {header:'Sueldo',key:'sueldo',width:12},
     {header:'Supervisor',key:'sup',width:20},
+    {header:'Min Tarde',key:'tarde',width:11},
+    {header:'Retardo',key:'retardo',width:14},
+    {header:'Pago Final',key:'pagoFinal',width:12},
     {header:'Pago',key:'pago',width:13},
   ];
   ws.getRow(1).eachCell(cell=>{
@@ -1184,7 +1241,11 @@ async function exportSheet1(){
       horaS:r.hora_salida||'', tiempo:calcTiempo(r.hora_entrada,r.hora_salida||''),
       area:r.area?r.area.charAt(0).toUpperCase()+r.area.slice(1):'',
       sueldo:r.sueldo?'$'+r.sueldo:'',
-      sup:r.supervisor_nombre||'', pago:r.hora_salida?r.pago:'pendiente'
+      sup:r.supervisor_nombre||'',
+      tarde:r.min_tarde||0,
+      retardo:r.descuento_estado==='cobrar'?'Descuento':(r.descuento_estado==='perdonado'?'Perdonado':(r.descuento_estado==='pendiente'?'⏳ Por decidir':'A tiempo')),
+      pagoFinal:(r.pago_final!=null)?'$'+r.pago_final:'',
+      pago:r.hora_salida?r.pago:'pendiente'
     });
   });
   const buf=await wb.xlsx.writeBuffer();
