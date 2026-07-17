@@ -342,7 +342,7 @@ canvas { display: none; }
       </div>
       <div class="card">
         <div class="admin-h">📊 Exportar</div>
-        <button class="btn btn-s" onclick="exportSheet1()" style="margin-bottom:8px">📥 Excel 1 — Entradas/Salidas</button>
+        <button class="btn btn-s" onclick="exportSheet1()" style="margin-bottom:8px">📥 Excel 1 — Lista Eventuales</button>
         <button class="btn btn-s" onclick="exportSheet2()">📥 Excel 2 — Por supervisor</button>
       </div>
       <div class="card">
@@ -369,6 +369,12 @@ const DUP_CONF = 95;
 const MATCH_CONF = 80;
 const VERIFY_CONF = 85;
 const CLEANUP = 14;
+const JORNADA_MINUTOS = 570; // 9.5 horas pagadas (7:15 a 17:30 menos 45 min de comida sin pago)
+function calcPagoFinal(sueldo, minutosTarde){
+  if(!sueldo) return 0;
+  const pago = sueldo - (minutosTarde*sueldo)/JORNADA_MINUTOS;
+  return Math.floor(pago/10)*10;
+}
 
 // Local caches (refreshed from Supabase, NOT the source of truth anymore)
 let workers = [];      // [{id, nombre, foto, face_id}]
@@ -1147,51 +1153,83 @@ function updateHist(){
 }
 
 // ===== EXPORT (sin cambios de lógica, solo usa regsHoy/historial completo) =====
-function calcTiempo(h1,h2){
-  if(!h1||!h2)return '';
-  const [eh,em]=h1.split(':').map(Number);
-  const [sh,sm]=h2.split(':').map(Number);
-  const mins=(sh*60+sm)-(eh*60+em);
-  return mins>0?`${Math.floor(mins/60)}h ${mins%60}m`:'';
-}
 
 async function exportSheet1(){
   await refreshHistorialHoy();
   const ents=regsHoy.filter(r=>r.hora_entrada);
   if(!ents.length){alert('Sin entradas hoy.');return;}
   const hoy=getDate();
+  const ordenados=[...ents].sort((a,b)=>{
+    const supCompare=(a.supervisor_nombre||'Sin asignar').localeCompare(b.supervisor_nombre||'Sin asignar','es');
+    return supCompare!==0?supCompare:a.nombre.localeCompare(b.nombre,'es');
+  });
   const wb=new ExcelJS.Workbook();
-  const ws=wb.addWorksheet('Registros');
+  const ws=wb.addWorksheet('Lista Eventuales');
   ws.columns=[
-    {header:'Nombre',key:'nombre',width:22},
-    {header:'Fecha',key:'fecha',width:13},
-    {header:'Hora Entrada',key:'horaE',width:14},
-    {header:'Hora Salida',key:'horaS',width:14},
-    {header:'Tiempo Trabajado',key:'tiempo',width:17},
-    {header:'Área',key:'area',width:12},
-    {header:'Sueldo',key:'sueldo',width:12},
-    {header:'Supervisor',key:'sup',width:20},
-    {header:'Pago',key:'pago',width:13},
+    {key:'no',width:6},
+    {key:'nombre',width:26},
+    {key:'jefe',width:20},
+    {key:'area',width:14},
+    {key:'horaE',width:14},
+    {key:'sueldo',width:12},
+    {key:'firma',width:22},
   ];
-  ws.getRow(1).eachCell(cell=>{
-    cell.font={bold:true,color:{argb:'FFFFFFFF'}};
-    cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF2A1F15'}};
-    cell.alignment={horizontal:'center'};
+  ws.mergeCells('A1:G1');
+  const titleCell=ws.getCell('A1');
+  titleCell.value='Lista Eventuales';
+  titleCell.font={bold:true,size:14};
+  titleCell.alignment={horizontal:'center'};
+  ws.mergeCells('A2:G2');
+  const fechaCell=ws.getCell('A2');
+  fechaCell.value=`Fecha: ${hoy}`;
+  fechaCell.font={bold:true,size:11};
+  ws.addRow([]);
+  const headerRow=ws.addRow(['No.','Nombre del Empleado','Jefe inmediato','Área','Hora Entrada','Sueldo','Firma']);
+  styleHeaderRow(headerRow,true);
+  let totalSueldo=0;
+  ordenados.forEach((r,i)=>{
+    const sueldoFinal=r.pago_final!=null
+      ? r.pago_final
+      : r.descuento_estado==='cobrar'
+        ? calcPagoFinal(r.sueldo,r.min_tarde||0)
+        : r.sueldo||'';
+    if(sueldoFinal!=='')totalSueldo+=Number(sueldoFinal);
+    ws.addRow([
+      i+1,
+      r.nombre,
+      r.supervisor_nombre||'',
+      r.area?r.area.charAt(0).toUpperCase()+r.area.slice(1):'',
+      r.hora_entrada,
+      sueldoFinal!==''?'$'+sueldoFinal:'',
+      '',
+    ]);
   });
-  ents.forEach(r=>{
-    ws.addRow({
-      nombre:r.nombre, fecha:hoy, horaE:r.hora_entrada,
-      horaS:r.hora_salida||'', tiempo:calcTiempo(r.hora_entrada,r.hora_salida||''),
-      area:r.area?r.area.charAt(0).toUpperCase()+r.area.slice(1):'',
-      sueldo:r.sueldo?'$'+r.sueldo:'',
-      sup:r.supervisor_nombre||'', pago:r.hora_salida?r.pago:'pendiente'
+  const totalRow=ws.addRow(['','','','','TOTAL','$'+totalSueldo,'']);
+  totalRow.eachCell({includeEmpty:true},cell=>{
+    cell.font={bold:true,size:12};
+    cell.border={top:{style:'medium',color:{argb:'FF2A1F15'}}};
+  });
+  ws.addRow([]);
+  ws.addRow([]);
+  const resumenTitleRow=ws.addRow(['Resumen por supervisor']);
+  resumenTitleRow.getCell(1).font={bold:true,size:12};
+  const resumenHeaderRow=ws.addRow(['Supervisor','Trabajadores']);
+  styleHeaderRow(resumenHeaderRow,false);
+  const conteo={};
+  ordenados.forEach(r=>{
+    const s=r.supervisor_nombre||'Sin asignar';
+    conteo[s]=(conteo[s]||0)+1;
+  });
+  Object.keys(conteo)
+    .sort((a,b)=>a.localeCompare(b,'es'))
+    .forEach(sup=>{
+      ws.addRow([sup,conteo[sup]]);
     });
-  });
   const buf=await wb.xlsx.writeBuffer();
   const blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
-  a.download=`umma_registros_${hoy.replace(/\//g,'-')}.xlsx`;
+  a.download=`umma_lista_eventuales_${hoy.replace(/\//g,'-')}.xlsx`;
   a.click();
 }
 
