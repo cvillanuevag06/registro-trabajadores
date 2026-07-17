@@ -369,11 +369,34 @@ const DUP_CONF = 95;
 const MATCH_CONF = 80;
 const VERIFY_CONF = 85;
 const CLEANUP = 14;
+const JORNADA_INICIO = {h:7, m:15};
 const JORNADA_MINUTOS = 570; // 9.5 horas pagadas (7:15 a 17:30 menos 45 min de comida sin pago)
+const GRACIA_MIN = 15; // antes de las 7:30 no se descuenta; de las 7:30 en adelante se cobra cualquier minuto
+function parseHora(horaStr){
+  const m=/(\d{1,2}):(\d{2})\s*([ap])/i.exec(horaStr||'');
+  if(!m)return null;
+  let h=parseInt(m[1],10);
+  const min=parseInt(m[2],10);
+  const isPM=m[3].toLowerCase()==='p';
+  if(isPM&&h!==12)h+=12;
+  if(!isPM&&h===12)h=0;
+  return {h,m:min};
+}
+function horaAFraccionDia(horaStr){
+  const t=parseHora(horaStr);
+  return t?(t.h*60+t.m)/1440:null;
+}
+function getMinutosTardeDeHora(horaStr){
+  const t=parseHora(horaStr);
+  if(!t)return 0;
+  const diff=(t.h*60+t.m)-(JORNADA_INICIO.h*60+JORNADA_INICIO.m);
+  return diff>0?diff:0;
+}
 function calcPagoFinal(sueldo, minutosTarde){
   if(!sueldo) return 0;
+  if(minutosTarde<GRACIA_MIN) return sueldo;
   const pago = sueldo - (minutosTarde*sueldo)/JORNADA_MINUTOS;
-  return Math.floor(pago/10)*10;
+  return Math.floor(Math.max(0,pago)/10)*10;
 }
 
 // Local caches (refreshed from Supabase, NOT the source of truth anymore)
@@ -852,10 +875,13 @@ async function authPago(){
   if(sTrab.hora_salida){showAl('al-s',`⚠️ ${sTrab.nombre} ya tiene salida hoy.`,'w');document.getElementById('btn-auth').style.display='none';return;}
   const btn=document.getElementById('btn-auth');btn.disabled=true;btn.textContent='⏳ Procesando...';
   const h=getHoraC();
+  const sueldo=sTrab.sueldo||0;
+  const minTarde=getMinutosTardeDeHora(sTrab.hora_entrada);
+  const pagoFinal=calcPagoFinal(sueldo,minTarde);
   // AWS maneja duplicados
 
   const {data, error} = await sb.from('historial').update({
-    hora_salida: h, foto_salida: sFoto, pago:'autorizado'
+    hora_salida: h, foto_salida: sFoto, pago:'autorizado', pago_final: pagoFinal
   }).eq('id', sTrab.id).select().single();
 
   btn.style.display='none';btn.disabled=false;btn.textContent='💰 Autorizar pago';
@@ -864,7 +890,8 @@ async function authPago(){
   const idx=regsHoy.findIndex(r=>r.id===sTrab.id);
   if(idx>-1) regsHoy[idx]=data;
 
-  document.getElementById('res-s').innerHTML=`<div class="rbox ok"><div class="rico">💰</div><div class="rtit">Pago autorizado</div><div class="rsub">${sTrab.nombre} · $${data.sueldo||0} · ${h}</div></div>`;
+  const descuentoTxt = pagoFinal<sueldo ? ` (descuento $${sueldo-pagoFinal} por ${minTarde} min tarde)` : '';
+  document.getElementById('res-s').innerHTML=`<div class="rbox ok"><div class="rico">💰</div><div class="rtit">Pago autorizado</div><div class="rsub">${sTrab.nombre} · $${pagoFinal}${descuentoTxt} · ${h}</div></div>`;
   sTrab=null;refreshPend();
 }
 
@@ -1170,41 +1197,45 @@ async function exportSheet1(){
     {key:'nombre',width:26},
     {key:'jefe',width:20},
     {key:'area',width:14},
-    {key:'horaE',width:14},
+    {key:'horaE',width:12},
     {key:'sueldo',width:12},
+    {key:'minTarde',width:11},
+    {key:'estado',width:12},
+    {key:'pago',width:12},
     {key:'firma',width:22},
   ];
-  ws.mergeCells('A1:G1');
+  ws.mergeCells('A1:J1');
   const titleCell=ws.getCell('A1');
   titleCell.value='Lista Eventuales';
   titleCell.font={bold:true,size:14};
   titleCell.alignment={horizontal:'center'};
-  ws.mergeCells('A2:G2');
+  ws.mergeCells('A2:J2');
   const fechaCell=ws.getCell('A2');
   fechaCell.value=`Fecha: ${hoy}`;
   fechaCell.font={bold:true,size:11};
   ws.addRow([]);
-  const headerRow=ws.addRow(['No.','Nombre del Empleado','Jefe inmediato','Área','Hora Entrada','Sueldo','Firma']);
+  const headerRow=ws.addRow(['No.','Nombre del Empleado','Jefe inmediato','Área','Hora Entrada','Sueldo','Min. Tarde','Estado','Pago Final','Firma']);
   styleHeaderRow(headerRow,true);
-  let totalSueldo=0;
+  const dataStartRow=headerRow.number+1;
   ordenados.forEach((r,i)=>{
-    const sueldoFinal=r.pago_final!=null
-      ? r.pago_final
-      : r.descuento_estado==='cobrar'
-        ? calcPagoFinal(r.sueldo,r.min_tarde||0)
-        : r.sueldo||'';
-    if(sueldoFinal!=='')totalSueldo+=Number(sueldoFinal);
-    ws.addRow([
-      i+1,
-      r.nombre,
-      r.supervisor_nombre||'',
-      r.area?r.area.charAt(0).toUpperCase()+r.area.slice(1):'',
-      r.hora_entrada,
-      sueldoFinal!==''?'$'+sueldoFinal:'',
-      '',
-    ]);
+    const rowNum=dataStartRow+i;
+    const row=ws.addRow([i+1,r.nombre,r.supervisor_nombre||'',r.area?r.area.charAt(0).toUpperCase()+r.area.slice(1):'','',r.sueldo||0,'','','','']);
+    const horaCell=row.getCell(5);
+    const fraccion=horaAFraccionDia(r.hora_entrada);
+    if(fraccion!=null){horaCell.value=fraccion;horaCell.numFmt='h:mm AM/PM';}else{horaCell.value=r.hora_entrada||'';}
+    row.getCell(6).numFmt='"$"#,##0';
+    row.getCell(7).value = fraccion!=null ? {formula:`MAX(0,ROUND((E${rowNum}-TIME(${JORNADA_INICIO.h},${JORNADA_INICIO.m},0))*1440,0))`} : 0;
+    row.getCell(8).value = {formula:`IF(G${rowNum}<${GRACIA_MIN},"A tiempo","Descuento")`};
+    const pagoCell=row.getCell(9);
+    pagoCell.value = {formula:`IF(G${rowNum}<${GRACIA_MIN},F${rowNum},MAX(0,FLOOR(F${rowNum}-(G${rowNum}*F${rowNum}/${JORNADA_MINUTOS}),10)))`};
+    pagoCell.numFmt='"$"#,##0';
   });
-  const totalRow=ws.addRow(['','','','','TOTAL','$'+totalSueldo,'']);
+  const totalRowNum=dataStartRow+ordenados.length;
+  const totalRow=ws.addRow(['','','','','','','','','','']);
+  totalRow.getCell(5).value='TOTAL';
+  const totalPagoCell=totalRow.getCell(9);
+  totalPagoCell.value={formula:`SUM(I${dataStartRow}:I${totalRowNum-1})`};
+  totalPagoCell.numFmt='"$"#,##0';
   totalRow.eachCell({includeEmpty:true},cell=>{
     cell.font={bold:true,size:12};
     cell.border={top:{style:'medium',color:{argb:'FF2A1F15'}}};
