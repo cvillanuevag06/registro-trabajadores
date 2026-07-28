@@ -1119,6 +1119,7 @@ function renderSupReg(){
       <div style="width:14px;height:14px;border-radius:50%;background:${s.color};flex-shrink:0"></div>
       <div style="flex:1;font-size:14px;font-weight:600">${s.nombre}</div>
       <div style="font-size:12px;color:var(--text2)">${s.area==='obra'?'🏗️ Obra':'🏭 Fábrica'}</div>
+      <button class="btn-del" style="background:var(--surface2);color:var(--text)" onclick="renombrarSupervisor('${s.id}')">✏️</button>
       <button class="btn-del" onclick="delSup('${s.id}')">Eliminar</button>
     </div>`).join('');
 }
@@ -1148,6 +1149,20 @@ async function delSup(id){
   const {error} = await sb.from('supervisores').delete().eq('id', id);
   if(error){ alert('Error eliminando: '+error.message); return; }
   sups=sups.filter(s=>s.id!==id);renderSupReg();
+}
+async function renombrarSupervisor(id){
+  const s=sups.find(x=>x.id===id);
+  if(!s)return;
+  const nuevo=prompt('Nuevo nombre para "'+s.nombre+'":', s.nombre);
+  if(nuevo==null)return;
+  const nombreNuevo=nuevo.trim();
+  if(!nombreNuevo||nombreNuevo===s.nombre)return;
+  const {error}=await sb.from('supervisores').update({nombre:nombreNuevo}).eq('id',id);
+  if(error){alert('Error renombrando: '+error.message);return;}
+  await sb.from('historial').update({supervisor_nombre:nombreNuevo}).eq('supervisor_id',id);
+  s.nombre=nombreNuevo;
+  regsHoy.forEach(r=>{if(r.supervisor_id===id)r.supervisor_nombre=nombreNuevo;});
+  renderSupReg();
 }
 
 // ===== TRABAJADORES (renombrar / prohibir) =====
