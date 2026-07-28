@@ -327,6 +327,17 @@ canvas { display: none; }
         </div>
       </div>
       <div class="card">
+        <div class="admin-h">🧑 Trabajadores</div>
+        <div id="trab-admin-main">
+          <button class="btn btn-p" onclick="abrirTrabajadores()">🧑 Ver y gestionar trabajadores</button>
+        </div>
+        <div id="trab-admin-list" style="display:none">
+          <button class="btn btn-s" onclick="volverAdminTrab()" style="margin-bottom:12px;font-size:13px">← Volver</button>
+          <input type="text" id="trab-search" placeholder="Buscar por nombre..." oninput="renderTrabReg()" style="margin-bottom:8px">
+          <div id="trab-registered-list"></div>
+        </div>
+      </div>
+      <div class="card">
         <div class="admin-h">💰 Sueldos base</div>
         <div id="sueldos-main">
           <button class="btn btn-p" onclick="abrirSueldos()">💰 Gestionar sueldos</button>
@@ -748,6 +759,11 @@ async function processEntrada(){
   if(match.found){
     eMatch=match.worker;
     const sim=Math.round(match.similarity);
+    if(eMatch.bloqueado){
+      box.innerHTML=`<div class="rbox err"><div class="rico">🚫</div><div class="rtit">Eventual Prohibido</div><div class="rsub">${eMatch.nombre} no tiene autorización para ingresar.${eMatch.motivo_bloqueo?' Motivo: '+eMatch.motivo_bloqueo:''}</div></div>`;
+      eMatch=null;
+      return;
+    }
     const ya=regsHoy.find(r=>r.trabajador_id===eMatch.id && r.hora_entrada);
     if(ya){box.innerHTML=`<div class="rbox warn"><div class="rico">⚠️</div><div class="rtit">${eMatch.nombre}</div><div class="rsub">Ya tiene entrada hoy a las ${ya.hora_entrada}</div></div>`;return;}
     box.innerHTML=`<div class="wmatch">${eMatch.foto?('<img src="'+eMatch.foto+'">'):'<div style="width:50px;height:50px;border-radius:8px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:20px">👤</div>'}<div><div class="wname">¡${eMatch.nombre}!</div><div class="wsub">Reconocido · ${sim}% · Liveness ✅</div></div></div>`;
@@ -1040,6 +1056,8 @@ function unlockAdmin(){
   document.getElementById('sup-admin-form').style.display='none';
   document.getElementById('sueldos-main').style.display='block';
   document.getElementById('sueldos-form').style.display='none';
+  document.getElementById('trab-admin-main').style.display='block';
+  document.getElementById('trab-admin-list').style.display='none';
 }
 function lockAdmin(){
   document.getElementById('admin-lock').style.display='block';
@@ -1130,6 +1148,65 @@ async function delSup(id){
   const {error} = await sb.from('supervisores').delete().eq('id', id);
   if(error){ alert('Error eliminando: '+error.message); return; }
   sups=sups.filter(s=>s.id!==id);renderSupReg();
+}
+
+// ===== TRABAJADORES (renombrar / prohibir) =====
+function abrirTrabajadores(){
+  document.getElementById('trab-admin-main').style.display='none';
+  document.getElementById('trab-admin-list').style.display='block';
+  document.getElementById('trab-search').value='';
+  renderTrabReg();
+}
+function volverAdminTrab(){
+  document.getElementById('trab-admin-main').style.display='block';
+  document.getElementById('trab-admin-list').style.display='none';
+}
+function renderTrabReg(){
+  const q=(document.getElementById('trab-search').value||'').trim().toLowerCase();
+  const list=q?workers.filter(w=>w.nombre.toLowerCase().includes(q)):workers;
+  const el=document.getElementById('trab-registered-list');
+  if(!list.length){el.innerHTML='<div style="padding:8px;color:var(--text2);font-size:13px">Sin trabajadores</div>';return;}
+  el.innerHTML=list.map(w=>`
+    <div class="sup-list-item">
+      <div style="flex:1;font-size:14px;font-weight:600${w.bloqueado?';color:var(--red)':''}">${w.bloqueado?'🚫 ':''}${w.nombre}</div>
+      <button class="btn-del" style="background:var(--surface2);color:var(--text)" onclick="renombrarTrabajador('${w.id}')">✏️</button>
+      ${w.bloqueado
+        ? `<button class="btn-del" style="background:var(--green)" onclick="desbloquearTrabajador('${w.id}')">✅ Permitir</button>`
+        : `<button class="btn-del" onclick="bloquearTrabajador('${w.id}')">🚫 Prohibir</button>`}
+    </div>`).join('');
+}
+async function renombrarTrabajador(id){
+  const w=workers.find(x=>x.id===id);
+  if(!w)return;
+  const nuevo=prompt('Nuevo nombre para "'+w.nombre+'":', w.nombre);
+  if(nuevo==null)return;
+  const nombreNuevo=nuevo.trim();
+  if(!nombreNuevo||nombreNuevo===w.nombre)return;
+  const {error}=await sb.from('trabajadores').update({nombre:nombreNuevo}).eq('id',id);
+  if(error){alert('Error renombrando: '+error.message);return;}
+  await sb.from('historial').update({nombre:nombreNuevo}).eq('trabajador_id',id);
+  w.nombre=nombreNuevo;
+  regsHoy.forEach(r=>{if(r.trabajador_id===id)r.nombre=nombreNuevo;});
+  renderTrabReg();
+}
+async function bloquearTrabajador(id){
+  const w=workers.find(x=>x.id===id);
+  if(!w)return;
+  if(!confirm('¿Marcar a "'+w.nombre+'" como prohibido? No podrá volver a registrar entrada.'))return;
+  const motivo=prompt('Motivo (opcional):','');
+  const {error}=await sb.from('trabajadores').update({bloqueado:true, motivo_bloqueo:motivo||null}).eq('id',id);
+  if(error){alert('Error: '+error.message);return;}
+  w.bloqueado=true;w.motivo_bloqueo=motivo||null;
+  renderTrabReg();
+}
+async function desbloquearTrabajador(id){
+  const w=workers.find(x=>x.id===id);
+  if(!w)return;
+  if(!confirm('¿Permitir de nuevo el ingreso de "'+w.nombre+'"?'))return;
+  const {error}=await sb.from('trabajadores').update({bloqueado:false, motivo_bloqueo:null}).eq('id',id);
+  if(error){alert('Error: '+error.message);return;}
+  w.bloqueado=false;w.motivo_bloqueo=null;
+  renderTrabReg();
 }
 function abrirSueldos(){
   document.getElementById('sueldos-main').style.display='none';
