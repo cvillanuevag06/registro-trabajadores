@@ -357,6 +357,17 @@ canvas { display: none; }
         <button class="btn btn-s" onclick="exportSheet2()">📥 Excel 2 — Por supervisor</button>
       </div>
       <div class="card">
+        <div class="admin-h">📁 Excels del mes</div>
+        <div id="excels-admin-main">
+          <button class="btn btn-p" onclick="abrirExcelsMes()">📁 Ver excels guardados</button>
+        </div>
+        <div id="excels-admin-list" style="display:none">
+          <button class="btn btn-s" onclick="volverAdminExcels()" style="margin-bottom:12px;font-size:13px">← Volver</button>
+          <input type="month" id="excels-mes" onchange="renderExcelsMes()" style="margin-bottom:8px">
+          <div id="excels-mes-list"></div>
+        </div>
+      </div>
+      <div class="card">
         <div class="admin-h">⚠️ Sistema</div>
         <button class="btn btn-s" onclick="cleanPhotos()" style="margin-bottom:8px">🧹 Limpiar fotos antiguas</button>
         <button class="btn btn-r" onclick="resetApp()">🗑️ Resetear app</button>
@@ -1058,6 +1069,8 @@ function unlockAdmin(){
   document.getElementById('sueldos-form').style.display='none';
   document.getElementById('trab-admin-main').style.display='block';
   document.getElementById('trab-admin-list').style.display='none';
+  document.getElementById('excels-admin-main').style.display='block';
+  document.getElementById('excels-admin-list').style.display='none';
 }
 function lockAdmin(){
   document.getElementById('admin-lock').style.display='block';
@@ -1486,6 +1499,47 @@ async function exportSheet2(){
   a.href=URL.createObjectURL(blob);
   a.download=`umma_supervisores_${hoy.replace(/\//g,'-')}.xlsx`;
   a.click();
+}
+
+// ===== EXCELS DEL MES (archivo automático) =====
+function abrirExcelsMes(){
+  document.getElementById('excels-admin-main').style.display='none';
+  document.getElementById('excels-admin-list').style.display='block';
+  const mesInput=document.getElementById('excels-mes');
+  if(!mesInput.value)mesInput.value=getDateISO().slice(0,7);
+  renderExcelsMes();
+}
+function volverAdminExcels(){
+  document.getElementById('excels-admin-list').style.display='none';
+  document.getElementById('excels-admin-main').style.display='block';
+}
+async function renderExcelsMes(){
+  const cont=document.getElementById('excels-mes-list');
+  const mes=document.getElementById('excels-mes').value;
+  if(!mes){cont.innerHTML='<div style="text-align:center;color:var(--text2);padding:16px">Selecciona un mes.</div>';return;}
+  cont.innerHTML='<div style="text-align:center;color:var(--text2);padding:16px">Cargando...</div>';
+  const {data,error}=await sb.storage.from('excels').list(mes,{limit:200,sortBy:{column:'name',order:'desc'}});
+  if(error){cont.innerHTML='<div style="text-align:center;color:var(--red);padding:16px">Error: '+error.message+'</div>';return;}
+  if(!data||!data.length){cont.innerHTML='<div style="text-align:center;color:var(--text2);padding:16px">Sin excels guardados ese mes.</div>';return;}
+  const porFecha={};
+  data.forEach(f=>{
+    const m=/^(\d{4}-\d{2}-\d{2})_(lista-eventuales|por-supervisor)\.xlsx$/.exec(f.name);
+    if(!m)return;
+    const fecha=m[1], tipo=m[2];
+    if(!porFecha[fecha])porFecha[fecha]={};
+    porFecha[fecha][tipo]=f.name;
+  });
+  const fechas=Object.keys(porFecha).sort((a,b)=>b.localeCompare(a));
+  if(!fechas.length){cont.innerHTML='<div style="text-align:center;color:var(--text2);padding:16px">Sin excels guardados ese mes.</div>';return;}
+  cont.innerHTML=fechas.map(fecha=>{
+    const t=porFecha[fecha];
+    const urlL=t['lista-eventuales']?sb.storage.from('excels').getPublicUrl(mes+'/'+t['lista-eventuales']).data.publicUrl:null;
+    const urlS=t['por-supervisor']?sb.storage.from('excels').getPublicUrl(mes+'/'+t['por-supervisor']).data.publicUrl:null;
+    return `<div class="ri"><div style="flex:1"><div class="rname">${fecha}</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">`
+      +(urlL?`<a class="btn btn-s" style="width:auto;padding:6px 12px;font-size:12px;margin-bottom:0" href="${urlL}" target="_blank" rel="noopener">📥 Lista Eventuales</a>`:'')
+      +(urlS?`<a class="btn btn-s" style="width:auto;padding:6px 12px;font-size:12px;margin-bottom:0" href="${urlS}" target="_blank" rel="noopener">📥 Por Supervisor</a>`:'')
+      +`</div></div></div>`;
+  }).join('');
 }
 
 // ===== MISC =====
