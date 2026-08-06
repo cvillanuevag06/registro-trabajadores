@@ -1310,11 +1310,14 @@ async function exportSheet1(){
   ws.addRow([]);
   const headerRow=ws.addRow(['No.','Nombre del Empleado','Jefe inmediato','Área','Sueldo Base','Hora Entrada','Min. Tarde','Pago Final','Firma']);
   styleHeaderRow(headerRow,true);
+  headerRow.eachCell({includeEmpty:true},cell=>{cell.border={...cell.border,top:{style:'thin',color:{argb:'FF000000'}},left:{style:'thin',color:{argb:'FF000000'}},right:{style:'thin',color:{argb:'FF000000'}}};});
   const dataStartRow=headerRow.number+1;
+  const tableBorder={style:'thin',color:{argb:'FF000000'}};
   ordenados.forEach((r,i)=>{
     const rowNum=dataStartRow+i;
     const row=ws.addRow([i+1,r.nombre,r.supervisor_nombre||'',r.area?r.area.charAt(0).toUpperCase()+r.area.slice(1):'',r.sueldo||0,'','','','']);
     row.height=30;
+    row.eachCell({includeEmpty:true},cell=>{cell.border={top:tableBorder,left:tableBorder,bottom:tableBorder,right:tableBorder};});
     row.getCell(5).numFmt='"$"#,##0';
     const horaCell=row.getCell(6);
     const fraccion=horaAFraccionDia(r.hora_entrada);
