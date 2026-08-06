@@ -1278,7 +1278,10 @@ async function exportSheet1(){
   const ents=regsHoy.filter(r=>r.hora_entrada);
   if(!ents.length){alert('Sin entradas hoy.');return;}
   const hoy=getDate();
+  const areaPeso=(a)=>a==='fabrica'?0:a==='obra'?1:2;
   const ordenados=[...ents].sort((a,b)=>{
+    const areaCompare=areaPeso(a.area)-areaPeso(b.area);
+    if(areaCompare!==0)return areaCompare;
     const supCompare=(a.supervisor_nombre||'Sin asignar').localeCompare(b.supervisor_nombre||'Sin asignar','es');
     return supCompare!==0?supCompare:a.nombre.localeCompare(b.nombre,'es');
   });
@@ -1289,44 +1292,43 @@ async function exportSheet1(){
     {key:'nombre',width:26},
     {key:'jefe',width:20},
     {key:'area',width:14},
-    {key:'horaE',width:12},
     {key:'sueldo',width:12},
+    {key:'horaE',width:12},
     {key:'minTarde',width:11},
-    {key:'estado',width:12},
     {key:'pago',width:12},
     {key:'firma',width:22},
   ];
-  ws.mergeCells('A1:J1');
+  ws.mergeCells('A1:I1');
   const titleCell=ws.getCell('A1');
   titleCell.value='Lista Eventuales';
   titleCell.font={bold:true,size:14};
   titleCell.alignment={horizontal:'center'};
-  ws.mergeCells('A2:J2');
+  ws.mergeCells('A2:I2');
   const fechaCell=ws.getCell('A2');
   fechaCell.value=`Fecha: ${hoy}`;
   fechaCell.font={bold:true,size:11};
   ws.addRow([]);
-  const headerRow=ws.addRow(['No.','Nombre del Empleado','Jefe inmediato','Área','Hora Entrada','Sueldo','Min. Tarde','Estado','Pago Final','Firma']);
+  const headerRow=ws.addRow(['No.','Nombre del Empleado','Jefe inmediato','Área','Sueldo Base','Hora Entrada','Min. Tarde','Pago Final','Firma']);
   styleHeaderRow(headerRow,true);
   const dataStartRow=headerRow.number+1;
   ordenados.forEach((r,i)=>{
     const rowNum=dataStartRow+i;
-    const row=ws.addRow([i+1,r.nombre,r.supervisor_nombre||'',r.area?r.area.charAt(0).toUpperCase()+r.area.slice(1):'','',r.sueldo||0,'','','','']);
-    const horaCell=row.getCell(5);
+    const row=ws.addRow([i+1,r.nombre,r.supervisor_nombre||'',r.area?r.area.charAt(0).toUpperCase()+r.area.slice(1):'',r.sueldo||0,'','','','']);
+    row.height=30;
+    row.getCell(5).numFmt='"$"#,##0';
+    const horaCell=row.getCell(6);
     const fraccion=horaAFraccionDia(r.hora_entrada);
     if(fraccion!=null){horaCell.value=fraccion;horaCell.numFmt='h:mm AM/PM';}else{horaCell.value=r.hora_entrada||'';}
-    row.getCell(6).numFmt='"$"#,##0';
-    row.getCell(7).value = fraccion!=null ? {formula:`MAX(0,ROUND((E${rowNum}-TIME(${JORNADA_INICIO.h},${JORNADA_INICIO.m},0))*1440,0))`} : 0;
-    row.getCell(8).value = {formula:`IF(G${rowNum}<${GRACIA_MIN},"A tiempo","Descuento")`};
-    const pagoCell=row.getCell(9);
-    pagoCell.value = {formula:`IF(G${rowNum}<${GRACIA_MIN},F${rowNum},MAX(0,FLOOR(F${rowNum}-(G${rowNum}*F${rowNum}/${JORNADA_MINUTOS}),10)))`};
+    row.getCell(7).value = fraccion!=null ? {formula:`MAX(0,ROUND((F${rowNum}-TIME(${JORNADA_INICIO.h},${JORNADA_INICIO.m},0))*1440,0))`} : 0;
+    const pagoCell=row.getCell(8);
+    pagoCell.value = {formula:`IF(G${rowNum}<${GRACIA_MIN},E${rowNum},MAX(0,FLOOR(E${rowNum}-(G${rowNum}*E${rowNum}/${JORNADA_MINUTOS}),10)))`};
     pagoCell.numFmt='"$"#,##0';
   });
   const totalRowNum=dataStartRow+ordenados.length;
-  const totalRow=ws.addRow(['','','','','','','','','','']);
-  totalRow.getCell(5).value='TOTAL';
-  const totalPagoCell=totalRow.getCell(9);
-  totalPagoCell.value={formula:`SUM(I${dataStartRow}:I${totalRowNum-1})`};
+  const totalRow=ws.addRow(['','','','','','','','','']);
+  totalRow.getCell(7).value='TOTAL';
+  const totalPagoCell=totalRow.getCell(8);
+  totalPagoCell.value={formula:`SUM(H${dataStartRow}:H${totalRowNum-1})`};
   totalPagoCell.numFmt='"$"#,##0';
   totalRow.eachCell({includeEmpty:true},cell=>{
     cell.font={bold:true,size:12};
@@ -1348,6 +1350,7 @@ async function exportSheet1(){
     .forEach(sup=>{
       ws.addRow([sup,conteo[sup]]);
     });
+  await ws.protect('', {selectLockedCells:true, selectUnlockedCells:true});
   const buf=await wb.xlsx.writeBuffer();
   const blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
   const a=document.createElement('a');
