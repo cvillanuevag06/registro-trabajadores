@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { useAppData } from '../context/AppDataContext';
-import { findWorkerByFace, indexFace } from '../lib/faceApi';
+import { findWorkerByFace, findPossibleWorkerByFace, indexFace } from '../lib/faceApi';
 import { supabase } from '../lib/supabaseClient';
 import { getDateISO, getHoraC } from '../lib/dateUtils';
+import { getMinutosTarde, getDescuentoEstado } from '../lib/descuentoUtils';
 import LivenessCapture from '../components/LivenessCapture';
 
 export default function Entrada() {
   const { workers, regsHoy, refreshWorkers, refreshHistorialHoy } = useAppData();
-  const [phase, setPhase] = useState('idle'); // idle | liveness | processing | match | new | blocked | success | error
+  const [phase, setPhase] = useState('idle'); // idle | liveness | processing | match | maybe | new | blocked | success | error
   const [foto, setFoto] = useState(null);
   const [matchedWorker, setMatchedWorker] = useState(null);
   const [similarity, setSimilarity] = useState(0);
@@ -15,6 +16,7 @@ export default function Entrada() {
   const [alertMsg, setAlertMsg] = useState('');
   const [blockedMsg, setBlockedMsg] = useState('');
   const [saving, setSaving] = useState(false);
+  const [regsFrescos, setRegsFrescos] = useState(null);
 
   const reset = () => {
     setPhase('idle');
@@ -24,27 +26,62 @@ export default function Entrada() {
     setNombreInput('');
     setAlertMsg('');
     setBlockedMsg('');
+    setRegsFrescos(null);
+  };
+
+  const yaTieneEntradaHoy = (worker, regs) => {
+    const ya = (regs || []).find((r) => r.trabajador_id === worker.id && r.hora_entrada);
+    return ya ? `${worker.nombre} ya tiene entrada hoy a las ${ya.hora_entrada}` : null;
   };
 
   const handleLivenessSuccess = async (img) => {
     setFoto(img);
     setPhase('processing');
     const { data: freshRegs } = await refreshHistorialHoy();
+    setRegsFrescos(freshRegs || regsHoy);
     const match = await findWorkerByFace(img, workers);
     if (match.found) {
-      const ya = (freshRegs || regsHoy).find((r) => r.trabajador_id === match.worker.id && r.hora_entrada);
-      if (ya) {
-        setBlockedMsg(`${match.worker.nombre} ya tiene entrada hoy a las ${ya.hora_entrada}`);
+      const bloqueo = yaTieneEntradaHoy(match.worker, freshRegs || regsHoy);
+      if (bloqueo) {
+        setBlockedMsg(bloqueo);
         setPhase('blocked');
         return;
       }
       setMatchedWorker(match.worker);
       setSimilarity(Math.round(match.similarity));
       setPhase('match');
-    } else {
-      setMatchedWorker(null);
-      setPhase('new');
+      return;
     }
+    // No hubo un match seguro (≥80%). Antes de asumir "trabajador nuevo" y
+    // crear otro perfil, probamos otra vez con un umbral más bajo: si se
+    // parece a alguien que ya existe, se lo preguntamos al guardia en vez
+    // de duplicarlo en silencio.
+    const posible = await findPossibleWorkerByFace(img, workers);
+    if (posible.found) {
+      setMatchedWorker(posible.worker);
+      setSimilarity(Math.round(posible.similarity));
+      setPhase('maybe');
+      return;
+    }
+    setMatchedWorker(null);
+    setPhase('new');
+  };
+
+  const confirmarEsElMismo = () => {
+    if (!matchedWorker) return;
+    const bloqueo = yaTieneEntradaHoy(matchedWorker, regsFrescos || regsHoy);
+    if (bloqueo) {
+      setBlockedMsg(bloqueo);
+      setPhase('blocked');
+      return;
+    }
+    setPhase('match');
+  };
+
+  const confirmarEsNuevo = () => {
+    setMatchedWorker(null);
+    setSimilarity(0);
+    setPhase('new');
   };
 
   const saveEntrada = async () => {
@@ -80,6 +117,7 @@ export default function Entrada() {
     }
 
     const hora = getHoraC();
+    const minTarde = getMinutosTarde();
     const { error: histErr } = await supabase.from('historial').insert({
       trabajador_id: workerId,
       nombre,
@@ -87,6 +125,8 @@ export default function Entrada() {
       hora_entrada: hora,
       foto_entrada: foto,
       pago: 'pendiente',
+      min_tarde: minTarde,
+      descuento_estado: getDescuentoEstado(minTarde),
     });
 
     setSaving(false);
@@ -159,6 +199,29 @@ export default function Entrada() {
             <div className="rsub">{alertMsg}</div>
           </div>
           <button className="btn btn-s" onClick={reset}>↩ Reintentar</button>
+        </div>
+      )}
+
+      {phase === 'maybe' && matchedWorker && (
+        <div className="card">
+          <div className="wmatch" style={{ borderColor: 'var(--yellow, #d4a017)' }}>
+            {matchedWorker.foto ? (
+              <img src={matchedWorker.foto} alt={matchedWorker.nombre} />
+            ) : (
+              <div style={{ width: 50, height: 50, borderRadius: 8, background: 'var(--surface2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>👤</div>
+            )}
+            <div>
+              <div className="wname">¿Eres {matchedWorker.nombre}?</div>
+              <div className="wsub">Se parece, pero no estamos seguros · {similarity}%</div>
+            </div>
+          </div>
+          <div className="rbox info">
+            <div className="rico">🤔</div>
+            <div className="rtit">Confirma tu identidad</div>
+            <div className="rsub">Si ya estás registrado y dices que eres nuevo, se crea un perfil duplicado.</div>
+          </div>
+          <button className="btn btn-g" onClick={confirmarEsElMismo}>✅ Sí, soy yo</button>
+          <button className="btn btn-s" onClick={confirmarEsNuevo}>🆕 No, soy nuevo</button>
         </div>
       )}
 

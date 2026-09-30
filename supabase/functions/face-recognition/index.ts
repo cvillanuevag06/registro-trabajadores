@@ -107,7 +107,7 @@ serve(async (req) => {
     }
 
     const body = await req.json();
-    const { action, image_base64, external_id, face_id } = body;
+    const { action, image_base64, external_id, face_id, threshold } = body;
 
     // ===== TEST: verificar conexión con AWS =====
     if (action === 'test') {
@@ -140,11 +140,12 @@ serve(async (req) => {
     if (action === 'search') {
       if (!image_base64) return json({ error: 'image_base64 requerido' }, 400);
 
+      const faceMatchThreshold = typeof threshold === 'number' && threshold >= 0 && threshold <= 100 ? threshold : 70;
       const r = await rekognitionRequest('SearchFacesByImage', {
         CollectionId: COLLECTION_ID,
         Image: { Bytes: image_base64 },
         MaxFaces: 1,
-        FaceMatchThreshold: 70,
+        FaceMatchThreshold: faceMatchThreshold,
       });
 
       if (r.status !== 200) {

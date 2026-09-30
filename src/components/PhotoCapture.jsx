@@ -13,12 +13,20 @@ export default function PhotoCapture({ onCapture, label = '📷 Tomar foto' }) {
     };
   }, []);
 
+  // The <video> element only mounts once `open` becomes true, so assigning
+  // srcObject inside start() (before that re-render happens) hits a null ref
+  // and silently never attaches the stream, leaving the preview black.
+  useEffect(() => {
+    if (open && videoRef.current && streamRef.current) {
+      videoRef.current.srcObject = streamRef.current;
+    }
+  }, [open]);
+
   const start = async () => {
     setError('');
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
       streamRef.current = stream;
-      if (videoRef.current) videoRef.current.srcObject = stream;
       setOpen(true);
     } catch {
       setError('No se pudo acceder a la cámara.');

@@ -59,6 +59,39 @@ export async function findWorkerByFace(base64Img, workers) {
   return { found: true, worker, similarity: r.similarity };
 }
 
+// Umbral bajo para detectar POSIBLES duplicados antes de registrar a alguien
+// como "trabajador nuevo". No es una identificación segura (por eso nunca se
+// usa para marcar entrada/salida automáticamente) — solo dispara una
+// pregunta de confirmación al guardia: "¿eres tú?" en vez de crear un
+// perfil nuevo en silencio.
+const POSIBLE_DUP_CONF = 55;
+
+export async function searchFaceLoose(base64Img) {
+  try {
+    const data = await callFaceFunction({
+      action: 'search',
+      image_base64: stripDataUrl(base64Img),
+      threshold: POSIBLE_DUP_CONF,
+    });
+    if (data.faceId && data.similarity >= POSIBLE_DUP_CONF) {
+      return { found: true, faceId: data.faceId, similarity: data.similarity, externalId: data.externalId };
+    }
+    return { found: false };
+  } catch (e) {
+    console.error('searchFaceLoose error', e);
+    return { found: false };
+  }
+}
+
+export async function findPossibleWorkerByFace(base64Img, workers) {
+  const r = await searchFaceLoose(base64Img);
+  if (!r.found || !r.externalId || !r.externalId.startsWith('worker_')) return { found: false };
+  const wId = r.externalId.replace('worker_', '');
+  const worker = workers.find((w) => String(w.id) === wId);
+  if (!worker) return { found: false };
+  return { found: true, worker, similarity: r.similarity };
+}
+
 export async function findSupervisorByFace(base64Img, sups) {
   const r = await searchFace(base64Img);
   if (!r.found || !r.externalId || !r.externalId.startsWith('sup_')) return { found: false };

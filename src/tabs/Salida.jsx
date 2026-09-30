@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { findWorkerByFace } from '../lib/faceApi';
 import { supabase } from '../lib/supabaseClient';
 import { getHoraC } from '../lib/dateUtils';
+import { calcPagoFinal, getMinutosTardeDeHora } from '../lib/descuentoUtils';
 import LivenessCapture from '../components/LivenessCapture';
 
 const VERIFY_CONF = 85;
@@ -63,9 +64,13 @@ export default function Salida() {
     setSaving(true);
     setAlertMsg('');
     const hora = getHoraC();
+    const sueldo = pendMatch.sueldo || 0;
+    const minTarde = getMinutosTardeDeHora(pendMatch.hora_entrada);
+    const cobrarDescuento = minTarde > 0 && calcPagoFinal(sueldo, minTarde) < sueldo;
+    const pagoFinal = calcPagoFinal(sueldo, minTarde);
     const { data, error } = await supabase
       .from('historial')
-      .update({ hora_salida: hora, foto_salida: foto, pago: 'autorizado' })
+      .update({ hora_salida: hora, foto_salida: foto, pago: 'autorizado', pago_final: pagoFinal })
       .eq('id', pendMatch.id)
       .select()
       .single();
@@ -75,7 +80,8 @@ export default function Salida() {
       return;
     }
     await refreshHistorialHoy();
-    setMsg(`${data.nombre} · $${data.sueldo || 0} · ${hora}`);
+    const descuentoTxt = cobrarDescuento && sueldo ? ` (descuento $${sueldo - pagoFinal} por ${minTarde} min tarde)` : '';
+    setMsg(`${data.nombre} · $${pagoFinal}${descuentoTxt} · ${hora}`);
     setPhase('success');
   };
 

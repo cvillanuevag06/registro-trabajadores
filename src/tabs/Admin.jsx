@@ -4,6 +4,7 @@ import { useAppData } from '../context/AppDataContext';
 import { indexFace } from '../lib/faceApi';
 import { supabase } from '../lib/supabaseClient';
 import { getDate } from '../lib/dateUtils';
+import { horaAFraccionDia, JORNADA_INICIO, JORNADA_MINUTOS, GRACIA_MIN } from '../lib/descuentoUtils';
 import PhotoCapture from '../components/PhotoCapture';
 
 function AdminLogin() {
@@ -129,14 +130,20 @@ function SupervisorForm({ sups, onDone, onCancel }) {
 function SupervisoresSection() {
   const { sups, refreshSupervisores } = useAppData();
   const [view, setView] = useState('main'); // main | list | form
+  const [confirmId, setConfirmId] = useState(null);
+  const [delError, setDelError] = useState('');
+  const [deleting, setDeleting] = useState(false);
 
   const delSup = async (id) => {
-    if (!window.confirm('¿Eliminar este supervisor?')) return;
+    setDeleting(true);
+    setDelError('');
     const { error } = await supabase.from('supervisores').delete().eq('id', id);
+    setDeleting(false);
     if (error) {
-      alert('Error eliminando: ' + error.message);
+      setDelError('Error eliminando: ' + error.message);
       return;
     }
+    setConfirmId(null);
     await refreshSupervisores();
   };
 
@@ -149,15 +156,37 @@ function SupervisoresSection() {
       {view === 'list' && (
         <>
           <button className="btn btn-s" style={{ marginBottom: 12, fontSize: 13 }} onClick={() => setView('main')}>← Volver</button>
+          {delError && <div className="al al-e" style={{ display: 'block' }}>{delError}</div>}
           {sups.length === 0 ? (
             <div style={{ padding: 8, color: 'var(--text2)', fontSize: 13 }}>Sin supervisores aún</div>
           ) : (
             sups.map((s) => (
-              <div className="sup-list-item" key={s.id}>
+              <div className="sup-list-item" key={s.id} style={{ flexWrap: 'wrap', gap: 8 }}>
                 <div style={{ width: 14, height: 14, borderRadius: '50%', background: s.color, flexShrink: 0 }}></div>
                 <div style={{ flex: 1, fontSize: 14, fontWeight: 600 }}>{s.nombre}</div>
                 <div style={{ fontSize: 12, color: 'var(--text2)' }}>{s.area === 'obra' ? '🏗️ Obra' : '🏭 Fábrica'}</div>
-                <button className="btn-del" onClick={() => delSup(s.id)}>Eliminar</button>
+                {confirmId === s.id ? (
+                  <>
+                    <span style={{ fontSize: 12, color: 'var(--text2)' }}>¿Eliminar?</span>
+                    <button
+                      className="btn-del"
+                      disabled={deleting}
+                      onClick={() => delSup(s.id)}
+                    >
+                      {deleting ? '...' : 'Sí, eliminar'}
+                    </button>
+                    <button
+                      className="btn btn-s"
+                      style={{ width: 'auto', padding: '6px 10px', fontSize: 13 }}
+                      disabled={deleting}
+                      onClick={() => setConfirmId(null)}
+                    >
+                      Cancelar
+                    </button>
+                  </>
+                ) : (
+                  <button className="btn-del" onClick={() => { setConfirmId(s.id); setDelError(''); }}>Eliminar</button>
+                )}
               </div>
             ))
           )}
@@ -241,14 +270,6 @@ function SueldosSection() {
   );
 }
 
-function calcTiempo(h1, h2) {
-  if (!h1 || !h2) return '';
-  const [eh, em] = h1.split(':').map(Number);
-  const [sh, sm] = h2.split(':').map(Number);
-  const mins = sh * 60 + sm - (eh * 60 + em);
-  return mins > 0 ? `${Math.floor(mins / 60)}h ${mins % 60}m` : '';
-}
-
 function toPastel(hex) {
   if (!hex || hex === '#888') return 'FFFAFAFA';
   const h = hex.replace('#', '');
@@ -300,39 +321,111 @@ function ExportSection() {
       return;
     }
     const hoy = getDate();
+    const ordenados = [...ents].sort((a, b) => {
+      const supCompare = (a.supervisor_nombre || 'Sin asignar').localeCompare(b.supervisor_nombre || 'Sin asignar', 'es');
+      return supCompare !== 0 ? supCompare : a.nombre.localeCompare(b.nombre, 'es');
+    });
+
     const { default: ExcelJS } = await import('exceljs');
     const wb = new ExcelJS.Workbook();
-    const ws = wb.addWorksheet('Registros');
+    const ws = wb.addWorksheet('Lista Eventuales');
     ws.columns = [
-      { header: 'Nombre', key: 'nombre', width: 22 },
-      { header: 'Fecha', key: 'fecha', width: 13 },
-      { header: 'Hora Entrada', key: 'horaE', width: 14 },
-      { header: 'Hora Salida', key: 'horaS', width: 14 },
-      { header: 'Tiempo Trabajado', key: 'tiempo', width: 17 },
-      { header: 'Área', key: 'area', width: 12 },
-      { header: 'Sueldo', key: 'sueldo', width: 12 },
-      { header: 'Supervisor', key: 'sup', width: 20 },
-      { header: 'Pago', key: 'pago', width: 13 },
+      { key: 'no', width: 6 },
+      { key: 'nombre', width: 26 },
+      { key: 'jefe', width: 20 },
+      { key: 'area', width: 14 },
+      { key: 'horaE', width: 12 },
+      { key: 'sueldo', width: 12 },
+      { key: 'minTarde', width: 11 },
+      { key: 'estado', width: 12 },
+      { key: 'pago', width: 12 },
+      { key: 'firma', width: 22 },
     ];
-    ws.getRow(1).eachCell((cell) => {
-      cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2A1F15' } };
-      cell.alignment = { horizontal: 'center' };
+
+    ws.mergeCells('A1:J1');
+    const titleCell = ws.getCell('A1');
+    titleCell.value = 'Lista Eventuales';
+    titleCell.font = { bold: true, size: 14 };
+    titleCell.alignment = { horizontal: 'center' };
+
+    ws.mergeCells('A2:J2');
+    const fechaCell = ws.getCell('A2');
+    fechaCell.value = `Fecha: ${hoy}`;
+    fechaCell.font = { bold: true, size: 11 };
+    ws.addRow([]);
+
+    const headerRow = ws.addRow(['No.', 'Nombre del Empleado', 'Jefe inmediato', 'Área', 'Hora Entrada', 'Sueldo', 'Min. Tarde', 'Estado', 'Pago Final', 'Firma']);
+    styleHeaderRow(headerRow, true);
+
+    const dataStartRow = headerRow.number + 1;
+    ordenados.forEach((r, i) => {
+      const rowNum = dataStartRow + i;
+      const row = ws.addRow([
+        i + 1,
+        r.nombre,
+        r.supervisor_nombre || '',
+        r.area ? r.area.charAt(0).toUpperCase() + r.area.slice(1) : '',
+        '',
+        r.sueldo || 0,
+        '',
+        '',
+        '',
+        '',
+      ]);
+
+      const horaCell = row.getCell(5);
+      const fraccion = horaAFraccionDia(r.hora_entrada);
+      if (fraccion != null) {
+        horaCell.value = fraccion;
+        horaCell.numFmt = 'h:mm AM/PM';
+      } else {
+        horaCell.value = r.hora_entrada || '';
+      }
+
+      row.getCell(6).numFmt = '"$"#,##0';
+
+      const minTardeCell = row.getCell(7);
+      minTardeCell.value = fraccion != null
+        ? { formula: `MAX(0,ROUND((E${rowNum}-TIME(${JORNADA_INICIO.h},${JORNADA_INICIO.m},0))*1440,0))` }
+        : 0;
+
+      row.getCell(8).value = { formula: `IF(G${rowNum}<${GRACIA_MIN},"A tiempo","Descuento")` };
+
+      const pagoCell = row.getCell(9);
+      pagoCell.value = { formula: `IF(G${rowNum}<${GRACIA_MIN},F${rowNum},MAX(0,FLOOR(F${rowNum}-(G${rowNum}*F${rowNum}/${JORNADA_MINUTOS}),10)))` };
+      pagoCell.numFmt = '"$"#,##0';
     });
-    ents.forEach((r) => {
-      ws.addRow({
-        nombre: r.nombre,
-        fecha: hoy,
-        horaE: r.hora_entrada,
-        horaS: r.hora_salida || '',
-        tiempo: calcTiempo(r.hora_entrada, r.hora_salida || ''),
-        area: r.area ? r.area.charAt(0).toUpperCase() + r.area.slice(1) : '',
-        sueldo: r.sueldo ? '$' + r.sueldo : '',
-        sup: r.supervisor_nombre || '',
-        pago: r.hora_salida ? r.pago : 'pendiente',
+
+    const totalRowNum = dataStartRow + ordenados.length;
+    const totalRow = ws.addRow(['', '', '', '', '', '', '', '', '', '']);
+    totalRow.getCell(5).value = 'TOTAL';
+    const totalPagoCell = totalRow.getCell(9);
+    totalPagoCell.value = { formula: `SUM(I${dataStartRow}:I${totalRowNum - 1})` };
+    totalPagoCell.numFmt = '"$"#,##0';
+    totalRow.eachCell({ includeEmpty: true }, (cell) => {
+      cell.font = { bold: true, size: 12 };
+      cell.border = { top: { style: 'medium', color: { argb: 'FF2A1F15' } } };
+    });
+
+    ws.addRow([]);
+    ws.addRow([]);
+    const resumenTitleRow = ws.addRow(['Resumen por supervisor']);
+    resumenTitleRow.getCell(1).font = { bold: true, size: 12 };
+    const resumenHeaderRow = ws.addRow(['Supervisor', 'Trabajadores']);
+    styleHeaderRow(resumenHeaderRow, false);
+
+    const conteo = {};
+    ordenados.forEach((r) => {
+      const s = r.supervisor_nombre || 'Sin asignar';
+      conteo[s] = (conteo[s] || 0) + 1;
+    });
+    Object.keys(conteo)
+      .sort((a, b) => a.localeCompare(b, 'es'))
+      .forEach((sup) => {
+        ws.addRow([sup, conteo[sup]]);
       });
-    });
-    await downloadWorkbook(wb, `umma_registros_${hoy.replace(/\//g, '-')}.xlsx`);
+
+    await downloadWorkbook(wb, `umma_lista_eventuales_${hoy.replace(/\//g, '-')}.xlsx`);
     setBusy('');
   };
 
@@ -448,7 +541,7 @@ function ExportSection() {
     <div className="card">
       <div className="admin-h">📊 Exportar</div>
       <button className="btn btn-s" style={{ marginBottom: 8 }} onClick={exportSheet1} disabled={!!busy}>
-        {busy === '1' ? 'Generando...' : '📥 Excel 1 — Entradas/Salidas'}
+        {busy === '1' ? 'Generando...' : '📥 Excel 1 — Lista Eventuales'}
       </button>
       <button className="btn btn-s" onClick={exportSheet2} disabled={!!busy}>
         {busy === '2' ? 'Generando...' : '📥 Excel 2 — Por supervisor'}
