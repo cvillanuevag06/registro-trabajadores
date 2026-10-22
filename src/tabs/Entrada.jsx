@@ -15,6 +15,8 @@ export default function Entrada() {
   const [nombreInput, setNombreInput] = useState('');
   const [alertMsg, setAlertMsg] = useState('');
   const [blockedMsg, setBlockedMsg] = useState('');
+  const [blockedTitle, setBlockedTitle] = useState('Entrada ya registrada');
+  const [blockedIcon, setBlockedIcon] = useState('⚠️');
   const [saving, setSaving] = useState(false);
   const [regsFrescos, setRegsFrescos] = useState(null);
 
@@ -26,12 +28,26 @@ export default function Entrada() {
     setNombreInput('');
     setAlertMsg('');
     setBlockedMsg('');
+    setBlockedTitle('Entrada ya registrada');
+    setBlockedIcon('⚠️');
     setRegsFrescos(null);
   };
 
   const yaTieneEntradaHoy = (worker, regs) => {
     const ya = (regs || []).find((r) => r.trabajador_id === worker.id && r.hora_entrada);
     return ya ? `${worker.nombre} ya tiene entrada hoy a las ${ya.hora_entrada}` : null;
+  };
+
+  // Un administrador puede bloquear a un trabajador (p.ej. alguien que se
+  // perdió con material o ya no debe volver a entrar). Esto se revisa antes
+  // que cualquier otra cosa: ni siquiera se le deja llegar a confirmar entrada.
+  const bloquearSiAplica = (worker) => {
+    if (!worker?.bloqueado) return false;
+    setBlockedTitle('🚫 Acceso bloqueado');
+    setBlockedIcon('🚫');
+    setBlockedMsg(`${worker.nombre}${worker.motivo_bloqueo ? ` — ${worker.motivo_bloqueo}` : ''}`);
+    setPhase('blocked');
+    return true;
   };
 
   const handleLivenessSuccess = async (img) => {
@@ -41,8 +57,11 @@ export default function Entrada() {
     setRegsFrescos(freshRegs || regsHoy);
     const match = await findWorkerByFace(img, workers);
     if (match.found) {
+      if (bloquearSiAplica(match.worker)) return;
       const bloqueo = yaTieneEntradaHoy(match.worker, freshRegs || regsHoy);
       if (bloqueo) {
+        setBlockedTitle('Entrada ya registrada');
+        setBlockedIcon('⚠️');
         setBlockedMsg(bloqueo);
         setPhase('blocked');
         return;
@@ -69,8 +88,11 @@ export default function Entrada() {
 
   const confirmarEsElMismo = () => {
     if (!matchedWorker) return;
+    if (bloquearSiAplica(matchedWorker)) return;
     const bloqueo = yaTieneEntradaHoy(matchedWorker, regsFrescos || regsHoy);
     if (bloqueo) {
+      setBlockedTitle('Entrada ya registrada');
+      setBlockedIcon('⚠️');
       setBlockedMsg(bloqueo);
       setPhase('blocked');
       return;
@@ -171,9 +193,9 @@ export default function Entrada() {
 
       {phase === 'blocked' && (
         <div className="card">
-          <div className="rbox warn">
-            <div className="rico">⚠️</div>
-            <div className="rtit">Entrada ya registrada</div>
+          <div className={`rbox ${blockedIcon === '🚫' ? 'err' : 'warn'}`}>
+            <div className="rico">{blockedIcon}</div>
+            <div className="rtit">{blockedTitle}</div>
             <div className="rsub">{blockedMsg}</div>
           </div>
           <button className="btn btn-s" onClick={reset}>↩ Volver a intentar</button>

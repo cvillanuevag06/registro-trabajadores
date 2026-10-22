@@ -207,6 +207,130 @@ function SupervisoresSection() {
   );
 }
 
+function TrabajadoresSection() {
+  const { workers, refreshWorkers } = useAppData();
+  const [view, setView] = useState('main'); // main | list
+  const [search, setSearch] = useState('');
+  const [editId, setEditId] = useState(null);
+  const [motivo, setMotivo] = useState('');
+  const [busyId, setBusyId] = useState(null);
+  const [msg, setMsg] = useState('');
+
+  const filtrados = [...workers]
+    .filter((w) => w.nombre.toLowerCase().includes(search.trim().toLowerCase()))
+    .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+
+  const bloquear = async (w) => {
+    setBusyId(w.id);
+    setMsg('');
+    const { error } = await supabase
+      .from('trabajadores')
+      .update({ bloqueado: true, motivo_bloqueo: motivo.trim() || null })
+      .eq('id', w.id);
+    setBusyId(null);
+    if (error) {
+      setMsg('Error bloqueando: ' + error.message);
+      return;
+    }
+    setEditId(null);
+    setMotivo('');
+    await refreshWorkers();
+  };
+
+  const desbloquear = async (w) => {
+    setBusyId(w.id);
+    setMsg('');
+    const { error } = await supabase
+      .from('trabajadores')
+      .update({ bloqueado: false, motivo_bloqueo: null })
+      .eq('id', w.id);
+    setBusyId(null);
+    if (error) {
+      setMsg('Error desbloqueando: ' + error.message);
+      return;
+    }
+    await refreshWorkers();
+  };
+
+  return (
+    <div className="card">
+      <div className="admin-h">🧑‍🤝‍🧑 Trabajadores</div>
+      {view === 'main' && (
+        <button className="btn btn-p" onClick={() => setView('list')}>🧑‍🤝‍🧑 Ver y bloquear trabajadores</button>
+      )}
+      {view === 'list' && (
+        <>
+          <button className="btn btn-s" style={{ marginBottom: 12, fontSize: 13 }} onClick={() => setView('main')}>← Volver</button>
+          <input
+            type="text"
+            placeholder="Buscar por nombre..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={{ marginBottom: 10 }}
+          />
+          {msg && <div className="al al-e" style={{ display: 'block', marginBottom: 8 }}>{msg}</div>}
+          {filtrados.length === 0 ? (
+            <div style={{ padding: 8, color: 'var(--text2)', fontSize: 13 }}>Sin resultados</div>
+          ) : (
+            filtrados.map((w) => (
+              <div className="sup-list-item" key={w.id} style={{ flexWrap: 'wrap', gap: 8 }}>
+                {w.foto ? (
+                  <img src={w.foto} alt={w.nombre} style={{ width: 32, height: 32, borderRadius: 6, objectFit: 'cover', flexShrink: 0 }} />
+                ) : (
+                  <div style={{ width: 32, height: 32, borderRadius: 6, background: 'var(--surface2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>👤</div>
+                )}
+                <div style={{ flex: 1, minWidth: 120 }}>
+                  <div style={{ fontSize: 14, fontWeight: 600 }}>{w.nombre}</div>
+                  {w.bloqueado && (
+                    <div style={{ fontSize: 11, color: 'var(--red)', fontWeight: 600, marginTop: 2 }}>
+                      🚫 Bloqueado{w.motivo_bloqueo ? ` — ${w.motivo_bloqueo}` : ''}
+                    </div>
+                  )}
+                </div>
+
+                {w.bloqueado ? (
+                  <button
+                    className="btn btn-s"
+                    style={{ width: 'auto', padding: '6px 10px', fontSize: 13 }}
+                    disabled={busyId === w.id}
+                    onClick={() => desbloquear(w)}
+                  >
+                    {busyId === w.id ? '...' : '✅ Desbloquear'}
+                  </button>
+                ) : editId === w.id ? (
+                  <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <input
+                      type="text"
+                      placeholder="Motivo (opcional)"
+                      value={motivo}
+                      onChange={(e) => setMotivo(e.target.value)}
+                    />
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button className="btn-del" disabled={busyId === w.id} onClick={() => bloquear(w)}>
+                        {busyId === w.id ? '...' : '🚫 Confirmar bloqueo'}
+                      </button>
+                      <button
+                        className="btn btn-s"
+                        style={{ width: 'auto', padding: '6px 10px', fontSize: 13 }}
+                        disabled={busyId === w.id}
+                        onClick={() => { setEditId(null); setMotivo(''); }}
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button className="btn-del" onClick={() => { setEditId(w.id); setMotivo(''); setMsg(''); }}>🚫 Bloquear</button>
+                )}
+              </div>
+            ))
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
 function SueldosSection() {
   const { cfg, refreshConfig } = useAppData();
   const [open, setOpen] = useState(false);
@@ -578,6 +702,7 @@ function AdminPanel() {
   return (
     <>
       <SupervisoresSection />
+      <TrabajadoresSection />
       <SueldosSection />
       <ExportSection />
       <SistemaSection />
